@@ -1,3 +1,2 @@
 # my-demo
-this my first git hub
-owner-omkar
+This is my first github repository
