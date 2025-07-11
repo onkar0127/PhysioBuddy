@@ -1,2 +1,2 @@
-# my-demo-77
+# my-demo
 This is my first github repository
