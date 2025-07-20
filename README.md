@@ -12,7 +12,7 @@
 
 ## ⚙️ Backend Setup (Django)
 
-Navigate to the backend folder and create a virtual environment:
+Navigate to the "backend" folder and create a virtual environment:
 
 ```bash
 cd backend
@@ -26,3 +26,26 @@ Install backend dependencies:
 pip install -r requirements.txt
 ```
 
+## Frontend Setup (React)
+Navigate to the "frontend" folder:
+
+```bash
+cd ../frontend
+Install frontend packages:
+```
+
+```bash
+npm install
+```
+
+To run the React server:
+
+```bash
+npm run dev
+```
+
+To run the Django server, go to "backend" folder
+
+```bash
+py manage.py runserver
+```
