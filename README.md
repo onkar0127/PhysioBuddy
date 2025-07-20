@@ -4,7 +4,7 @@
 
 ## 🔗 Prerequisites
 
-- Python 3.10 or higher
+- Python 3.10.11
 - Node.js + npm installed
 - Git installed
 
@@ -31,8 +31,9 @@ Navigate to the "frontend" folder:
 
 ```bash
 cd ../frontend
-Install frontend packages:
 ```
+
+Install frontend packages:
 
 ```bash
 npm install
