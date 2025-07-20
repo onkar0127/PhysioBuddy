@@ -16,11 +16,19 @@ Navigate to the "backend" folder and create a virtual environment:
 
 ```bash
 cd backend
-python -m venv .venv
+py -3.10 -m venv .venv
 .\.venv\Scripts\activate
 ```
 
-Install backend dependencies:
+To check python version:
+
+```bash
+py --version
+```
+
+The version shouuld be 3.10.(something) after activating env
+
+Install backend dependencies (only after activating the virtual environment):
 
 ```bash
 pip install -r requirements.txt
