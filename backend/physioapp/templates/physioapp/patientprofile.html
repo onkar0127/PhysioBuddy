@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Patient Profile</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #f0f0f0;
+    }
+    .profile-card {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 400px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    h2 {
+      margin-top: 0;
+      color: #333;
+    }
+    p {
+      margin: 8px 0;
+      color: #555;
+    }
+    .label {
+      font-weight: bold;
+      color: #222;
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-card">
+    <h2>Patient Profile</h2>
+    <p><span class="label">Name:</span> {{ patient.user.username }}</p>
+    <p><span class="label">Email:</span> {{ patient.user.email }}</p>
+    <p><span class="label">Phone:</span> +91 {{ patient.phone_number }}</p>
+    <p><span class="label">Date of Birth:</span> {{ patient.date_of_birth }}</p>
+    <p><span class="label">Gender:</span> {{ patient.gender }}</p>
+    <p><span class="label">Assigned Doctor:</span> {{ patient.doctor }}</p>
+  </div>
+</body>
+</html>

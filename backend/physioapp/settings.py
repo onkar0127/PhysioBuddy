@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+    'physioapp',
 ]
 
 MIDDLEWARE = [
@@ -113,4 +114,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# For letting Cross usage  of data.
 CORS_ORIGIN_ALLOW_ALL = True
+
+LOGIN_URL = '/login/'
