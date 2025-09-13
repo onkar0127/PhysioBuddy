@@ -9,7 +9,7 @@ __pycache__/
 env/
 ENV/
 #virtual environment 
-venv/
+phvenv/
 
 # Django specific
 db.sqlite3
