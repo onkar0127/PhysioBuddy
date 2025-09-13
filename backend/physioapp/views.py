@@ -1,9 +1,14 @@
 from django.http import StreamingHttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import time
 import cv2
 import mediapipe as mp
+
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from .models import PatientProfile, DoctorProfile
 
 
 def test_api(request):
@@ -119,3 +124,86 @@ def video_feed(request):
 
 def webcam_page(request):
     return render(request, 'webcam.html')
+
+def login_view(request):
+
+    error = ""
+    if request.method == 'POST':
+
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        # Authenticate the user.
+        user = authenticate(request, username=username, password=password)
+
+
+        if user is not None:
+            # Step 4: Login the user
+            login(request, user)
+
+            # Step 5: Redirect based on user type (doctor vs. patient)
+            if user.is_staff:
+                # User is a doctor
+                return redirect('/api/doctor/profile/') # Make sure this URL exists
+            else:
+                # User is a patient
+                return redirect('/api/patient/profile/') # Make sure this URL exists
+        else:
+            error = "Invalid"
+
+    # Render the login page for GET requests or on login failure
+    return render(request, 'physioapp/login.html', {"error": error})
+
+@login_required
+def doctor_profile(request):
+    """
+    Displays the doctor's dashboard.
+    """
+    # Get the doctor's profile using the reverse relationship
+    doctor_profile = request.user.doctorprofile
+    
+    # Create the context dictionary
+    context = {
+        'doctor': doctor_profile,
+    }
+    return render(request, 'physioapp/doctorprofile.html', context)
+
+
+@login_required
+def patient_profile(request):
+    """
+    Displays the patient's dashboard.
+    """
+    # Get the patient's profile using the reverse relationship
+    patient_profile = request.user.patientprofile
+    
+    # Create the context dictionary
+    context = {
+        'patient': patient_profile,
+    }
+    return render(request, 'physioapp/patientprofile.html', context)
+
+@login_required
+def patient_profile_api(request):
+    
+    patient = get_object_or_404(PatientProfile, user=request.user)
+    
+    data = {'patient name': patient.user.username, 
+            'phone number': patient.phone_number, 
+            'email': patient.user.email, 
+            'dob': patient.date_of_birth, 
+            'gender': patient.gender,
+            'assigned doctor': patient.doctor.id
+            }
+
+    return JsonResponse(data)
+
+@login_required
+def doctor_profile_api(request):
+    
+    doctor = get_object_or_404(DoctorProfile, user=request.user)
+    
+    data = {'doctor name': doctor.user.username,
+            }
+
+    return JsonResponse(data)
