@@ -118,3 +118,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ORIGIN_ALLOW_ALL = True
 
 LOGIN_URL = '/login/'
+
+# The URL that handles the media served from MEDIA_ROOT, used for managing uploaded files.
+MEDIA_URL = '/media/'
+
+# The absolute filesystem path to the directory that will hold user-uploaded files.
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
