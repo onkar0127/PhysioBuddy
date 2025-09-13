@@ -1,19 +1,22 @@
 #root {
-  max-width: 1280px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1.5rem;
   text-align: center;
 }
 
 .logo {
-  height: 6em;
-  padding: 1.5em;
+  height: 5rem; /* smaller default size for mobile */
+  padding: 1rem;
   will-change: filter;
-  transition: filter 300ms;
+  transition: filter 300ms, transform 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
+  transform: scale(1.05);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -34,9 +37,26 @@
 }
 
 .card {
-  padding: 2em;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  background: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .read-the-docs {
-  color: #888;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* Responsive tweaks */
+@media (min-width: 640px) {
+  .logo {
+    height: 6rem; /* larger logo on tablets and above */
+    padding: 1.5rem;
+  }
+
+  #root {
+    padding: 2rem;
+    max-width: 1280px;
+  }
 }
