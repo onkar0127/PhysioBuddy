@@ -20,7 +20,10 @@ class PatientProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     date_of_birth = models.DateField(blank=True, null=True)
     gender = models.CharField(max_length=10, blank=True, null=True)
+    height = models.IntegerField()
+    weight = models.IntegerField()
     phone_number = models.CharField(max_length=15, blank=True, null=True)
+    image = models.ImageField(null=True, blank=True)
     doctor = models.ForeignKey(
         DoctorProfile,
         on_delete=models.SET_NULL, # If the doctor is deleted, the patient is not.

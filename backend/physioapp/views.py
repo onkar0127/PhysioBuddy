@@ -138,20 +138,19 @@ def login_view(request):
 
 
         if user is not None:
-            # Step 4: Login the user
+            # Login the user
             login(request, user)
 
-            # Step 5: Redirect based on user type (doctor vs. patient)
+            # Redirect based on user type (doctor or patient)
             if user.is_staff:
                 # User is a doctor
-                return redirect('/api/doctor/profile/') # Make sure this URL exists
+                return redirect('/api/doctor/profile/')
             else:
                 # User is a patient
-                return redirect('/api/patient/profile/') # Make sure this URL exists
+                return redirect('/api/patient/profile/')
         else:
             error = "Invalid"
 
-    # Render the login page for GET requests or on login failure
     return render(request, 'physioapp/login.html', {"error": error})
 
 @login_required
