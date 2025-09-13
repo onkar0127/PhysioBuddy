@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Example utility override */
 .cascading-right {
   margin-right: -50px;
 }
@@ -11,14 +12,12 @@
     margin-right: 0;
   }
 }
+
+/* Base font + smoothing */
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -26,6 +25,7 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Links */
 a {
   font-weight: 500;
   color: #646cff;
@@ -35,29 +35,25 @@ a:hover {
   color: #535bf2;
 }
 
+/* Reset body */
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  min-width: 100%;
   min-height: 100vh;
+  background-color: #242424;
+  color: rgba(255, 255, 255, 0.87);
 }
 
+/* Headings */
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
 }
 
+/* Buttons */
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
+  @apply rounded-lg border border-transparent px-4 py-2 text-base font-medium cursor-pointer transition;
   background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
 }
 button:hover {
   border-color: #646cff;
@@ -67,8 +63,9 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* Light mode overrides */
 @media (prefers-color-scheme: light) {
-  :root {
+  body {
     color: #213547;
     background-color: #ffffff;
   }
