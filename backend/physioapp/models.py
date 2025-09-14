@@ -17,11 +17,29 @@ class PatientProfile(models.Model):
     """
     Model to store a patient's specific information.
     """
+
+    BLOOD_TYPES=[
+        ('A+', 'A positive'),
+        ('A-', 'A negative'),
+        ('B+', 'B positive'),
+        ('B-', 'B negative'),
+        ('AB+', 'AB positive'),
+        ('AB-', 'AB negative'),
+        ('O+', 'O positive'),
+        ('O-', 'O negative'),
+    ]
+
+    GENDER_TYPES=[
+        ('male', 'Male'),
+        ('female', 'Female'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     date_of_birth = models.DateField(blank=True, null=True)
-    gender = models.CharField(max_length=10, blank=True, null=True)
+    gender = models.CharField(max_length=10, blank=True, null=True, choices=GENDER_TYPES)
     height = models.IntegerField(null=True)
     weight = models.IntegerField(null=True)
+    blood_group = models.CharField(max_length=5, choices=BLOOD_TYPES, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     image = models.ImageField(null=True, blank=True)
     doctor = models.ForeignKey(
