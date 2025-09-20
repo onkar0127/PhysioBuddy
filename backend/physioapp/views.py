@@ -91,36 +91,6 @@ def login_api(request):
 
 
 @login_required
-def doctor_profile(request):
-    """
-    Displays the doctor's dashboard.
-    """
-    # Get the doctor's profile using the reverse relationship
-    doctor_profile = request.user.doctorprofile
-    
-    # Create the context dictionary
-    context = {
-        'doctor': doctor_profile,
-    }
-    return render(request, 'physioapp/doctorprofile.html', context)
-
-
-@login_required
-def patient_profile(request):
-    """
-    Displays the patient's dashboard.
-    """
-    # Get the patient's profile using the reverse relationship
-    patient_profile = request.user.patientprofile
-    
-    # Create the context dictionary
-    context = {
-        'patient': patient_profile,
-    }
-    return render(request, 'physioapp/patientprofile.html', context)
-
-
-@login_required
 def patient_profile_api(request):
     try:
         patient = get_object_or_404(PatientProfile, user=request.user)
