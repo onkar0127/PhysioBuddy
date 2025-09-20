@@ -199,10 +199,17 @@ def patient_profile_api(request):
 
 @login_required
 def doctor_profile_api(request):
+    try:
     
-    doctor = get_object_or_404(DoctorProfile, user=request.user)
-    
-    data = {'doctor name': doctor.user.username,
-            }
+        doctor = get_object_or_404(DoctorProfile, user=request.user)
+        
+        data = {'doctor name': doctor.user.username,
+                'phone number': doctor.phone_number,
+                'email': doctor.user.email,
+                'specialization': doctor.speciality,
+                'qualification': doctor.qualification,
+                }
 
-    return JsonResponse(data)
+        return JsonResponse(data)
+    except DoctorProfile.DoesNotExist:
+        return JsonResponse({'error': 'Doctor profile not found.'}, status=404)
