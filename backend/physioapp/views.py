@@ -105,7 +105,7 @@ def patient_profile_api(request):
                     'height' : patient.height, 
                     'weight' : patient.weight, 
                     'bg' : patient.blood_group, 
-                    # 'patient image' : patient.image
+                    'patient image' : patient.image.url if patient.image else None
                 }        
         return JsonResponse(data)
         
