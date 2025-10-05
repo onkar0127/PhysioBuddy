@@ -1,4 +1,3 @@
-from django.http import StreamingHttpResponse
 from django.shortcuts import render
 import subprocess
 import os, sys
@@ -9,6 +8,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, Http404
 from django.shortcuts import get_object_or_404
 from .models import PatientProfile, DoctorProfile, AssignedExercise
+
+from django.views.decorators.csrf import csrf_exempt
 
 from django.utils import timezone
 
@@ -22,6 +23,7 @@ def start_exercise(request):
     return JsonResponse({'status': 'Exercise started'})
 
 
+@csrf_exempt
 def login_api(request):
     if request.method == 'POST':
         try:
@@ -56,7 +58,28 @@ def login_api(request):
 
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
-    
+
+    if request.method == 'GET':
+         # Get the data
+            username = request.GET.get('username')
+            password = request.GET.get('password')
+
+            # Authentication logic goes here...
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                # Login the user
+                login(request, user)
+
+                # Check the user type: doctor or patient
+                if user.is_staff:
+                    # User is a doctor
+                    return JsonResponse({'user': 'doctor'}, status=200)
+                else:
+                    # User is a patient
+                    return JsonResponse({'user': 'patient'}, status=200)
+            else:
+                return JsonResponse({'error': 'User doesn\'t exists'}, status=404)
+
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
@@ -81,6 +104,7 @@ def patient_profile_api(request):
             }        
     return JsonResponse(patient_details, status=200)
 
+
 @login_required
 def doctor_profile_api(request):
     try:
@@ -97,6 +121,7 @@ def doctor_profile_api(request):
                 }
 
     return JsonResponse(doctor_details, status=200)
+
 
 @login_required
 def get_patient_list(request):
