@@ -12,7 +12,7 @@ const doctor = {
     bio: "Dr. Alice Brown is a board-certified orthopedic specialist with over a decade of experience treating musculoskeletal conditions. She is passionate about patient-centered care and rehabilitation.",
 };
 
-export default function Profile() {
+export default function D_Profile() {
     return (
         <div className="min-h-screen bg-gray-100 p-6">
             <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-6 border border-gray-200">
