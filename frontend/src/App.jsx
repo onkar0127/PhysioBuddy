@@ -2,9 +2,10 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import Home from './pages/Home.jsx';
 import Login from './pages/Login.jsx';
-import Profile from './pages/D_Profile.jsx';
 import D_Profile from './pages/D_Profile.jsx';
-import P_Profile from './pages/P_profile.jsx';
+import AssignExercise from './pages/AssignExercise.jsx';
+import WebStream from './pages/Webstream.jsx';
+
 
 function App() {
   return (
@@ -13,8 +14,9 @@ function App() {
 
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/dProfile" element={<D_Profile />} />
-        <Route path="/pProfile" element={<P_Profile />} />
+        <Route path="/Profile" element={<D_Profile />} />
+        <Route path="/assign-exercise" element={<AssignExercise />} />
+        <Route path='/live' element={<WebStream />}/>
 
 
 

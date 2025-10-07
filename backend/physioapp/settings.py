@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'physioapp',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -40,6 +41,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+    "django.middleware.csrf.CsrfViewMiddleware",
 ]
 
 ROOT_URLCONF = 'physioapp.urls'
@@ -60,6 +62,11 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'physioapp.wsgi.application'
+ASGI_APPLICATION = 'physioapp.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}
+}
 
 
 # Database
@@ -116,6 +123,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # For letting Cross usage  of data.
 CORS_ORIGIN_ALLOW_ALL = True
+
+# Allow React dev server origin
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:5173",
+#     "http://127.0.0.1:5173",
+# ]
+
+# # If you want cookies (CSRF/session) to flow across origins:
+# CORS_ALLOW_CREDENTIALS = True
+
+# # CSRF trusted origins (Django 4+ requires this for cross-site POSTs)
+# CSRF_TRUSTED_ORIGINS = [
+#     "http://localhost:5173",
+#     "http://127.0.0.1:5173",
+# ]
 
 LOGIN_URL = '/login/'
 
