@@ -10,6 +10,7 @@ urlpatterns = [
     path('api/patient/profile/', views.patient_profile_api),
     path('api/doctor/profile/', views.doctor_profile_api),
     path('api/get-patient-list/', views.get_patient_list),
+    path('api/get-exercise-list/', views.get_exercise_list),
 
     # Tkinter URL
     path('tk/', views.tk),
