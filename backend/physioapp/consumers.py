@@ -12,7 +12,7 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
         self.counter = 0
         self.ready_to_count = False
         self.is_fold = False
-        self.UPPER_THRESHOLD = 160
+        self.UPPER_THRESHOLD = 150
         self.LOWER_THRESHOLD = 35
 
         # MediaPipe Pose (create lazily in thread)
