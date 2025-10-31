@@ -185,8 +185,6 @@ def get_patient_list(request):
     return JsonResponse(assignments_list, safe=False, status=200)
 
 
-
-@login_required
 def get_exercise_list(request):
     # Check if the user is patient
     if  request.user.is_staff:
