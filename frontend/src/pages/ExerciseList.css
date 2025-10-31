@@ -1,0 +1,118 @@
+body{
+  background-color: #b3f0f2;
+  margin: 0;
+  padding: 0;
+}
+
+.page-wrapper {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 20px;
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(120deg, #e3f2fd, #f8f9fa);
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+h1 {
+  color: #1d3557;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  color: #555;
+  font-size: 15px;
+}
+
+.error-box {
+  background: #ffe0e0;
+  color: #b00020;
+  border: 1px solid #b00020;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* Rows */
+.exercise-row {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+/* Cards */
+.exercise-card {
+  flex: 1;
+  min-width: 250px;
+  max-width: 300px;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.exercise-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+.exercise-card h2 {
+  margin-bottom: 12px;
+  color: #2c3e50;
+}
+
+.reps {
+  font-size: 15px;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.start-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.3s ease;
+  margin-top: 8px;
+}
+
+.start-btn:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.start-btn:disabled {
+  background: #999;
+  cursor: not-allowed;
+}
+
+/* Demo Video Button */
+.video-btn {
+  display: inline-block;
+  margin-top: 12px;
+  background: #ff9800;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-decoration: none;
+  transition: background 0.3s ease;
+}
+
+.video-btn:hover {
+  background: #e68900;
+}
