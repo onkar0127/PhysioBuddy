@@ -1,29 +1,11 @@
-from django.shortcuts import render
-import subprocess
-import os, sys
-
 import json
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse, Http404
 from django.shortcuts import get_object_or_404
 from .models import PatientProfile, DoctorProfile, AssignedExercise
-
-from django.views.decorators.csrf import csrf_exempt
-
 from django.utils import timezone
 
-def tk(request):
-    return render(request, 'exercise.html')
 
-def start_exercise(request):
-    exercise_id = request.GET.get('exercise_id', '1')  # default to 1
-    script_path = os.path.join(os.path.dirname(__file__), '..', 'exercise_session.py')
-    subprocess.Popen([sys.executable, script_path, exercise_id])
-    return JsonResponse({'status': 'Exercise started'})
-
-
-@csrf_exempt
 def login_api(request):
     if request.method == 'POST':
         try:
@@ -60,9 +42,11 @@ def login_api(request):
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
     if request.method == 'GET':
-         # Get the data
+            # Get the data
             username = request.GET.get('username')
             password = request.GET.get('password')
+            
+            logout(request)
 
             # Authentication logic goes here...
             user = authenticate(request, username=username, password=password)
@@ -83,7 +67,6 @@ def login_api(request):
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
-@login_required
 def patient_profile_api(request):
     try:
         patient = get_object_or_404(PatientProfile, user=request.user)
@@ -105,25 +88,37 @@ def patient_profile_api(request):
     return JsonResponse(patient_details, status=200)
 
 
-@login_required
 def doctor_profile_api(request):
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {"success": False, "error": "Authentication required"},
+            status=401
+        )
+
     try:
+        # 2. Fetch doctor profile for the logged-in user
         doctor = get_object_or_404(DoctorProfile, user=request.user)
+
+        # 3. Build response
+        doctor_details = {
+            "success": True,
+            "data": {
+                "doctor_name": doctor.user.username,
+                "phone_number": doctor.phone_number,
+                "email": doctor.user.email,
+                "specialization": doctor.speciality,
+                "qualification": doctor.qualification,
+            },
+        }
+        return JsonResponse(doctor_details, status=200)
+
     except Http404:
-        return JsonResponse({'error': 'Doctor profile not found.'}, status=404)
-    
-    doctor_details = {
-                    'doctor name': doctor.user.username,
-                    'phone number': doctor.phone_number,
-                    'email': doctor.user.email,
-                    'specialization': doctor.speciality,
-                    'qualification': doctor.qualification,
-                }
-
-    return JsonResponse(doctor_details, status=200)
+        return JsonResponse(
+            {"success": False, "error": "Doctor profile not found"},
+            status=404
+        )
 
 
-@login_required
 def get_patient_list(request):
     # Check if the user is doctor
     if not request.user.is_staff:
@@ -141,7 +136,7 @@ def get_patient_list(request):
     # Filter Assignments for today by the current doctor
     assignments = AssignedExercise.objects.filter(
         assigned_by=doctor,
-        date_assigned__date=today
+       # date_assigned__date=today
     ).select_related('patient__user', 'exercise')
 
     # Manually Serialize the QuerySet into a JSON-ready list
