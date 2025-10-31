@@ -68,12 +68,12 @@ export default function WebcamStream() {
   }
 
   return (
-    <div style={{ display: "grid", gap: 12, maxWidth: 800 }}>
+    <div style={{ display: "grid", gap: 12, maxWidth: 1000 }}>
       <div style={{ fontWeight: 600 }}>WebSocket: {connected ? "Connected" : "Disconnected"}</div>
       <div style={{ display: "flex", gap: 12 }}>
         <div>
           <div>Local webcam</div>
-          <video ref={videoRef} muted playsInline style={{ width: 320, height: 180, background: "#000", transform: "scaleX(-1)" }} />
+          <video ref={videoRef} muted playsInline style={{ width: 1000, background: "#000", transform: "scaleX(-1)" }} />
         </div>
         <div>
           <div style={{ marginTop: 8 }}>Repetitions: {repCount}</div>

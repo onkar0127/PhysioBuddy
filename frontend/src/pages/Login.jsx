@@ -17,6 +17,7 @@ const Cookies = {
 // NOTE: These variables simulate the imports from your original file:
 import doctorGif from "../assets/doc.gif"; 
 import pb from "../assets/pb.png";
+import { useNavigate } from "react-router-dom";
 
 
 export default function App() {
@@ -24,68 +25,56 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const navigate = useNavigate();
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     // Clear error message when user starts typing again
     if (error) setError(null);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
 
-    const { username, password } = form;
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
 
-    // --- Configuration for running in this environment ---
-    // Set to 'true' to bypass network issues and test frontend logic.
-    // Set to 'false' to try connecting to the real Django backend.
-    const IS_MOCK_ENABLED = false; 
-    const loginUrl = 'http://127.0.0.1:8000/api/login/';
+  const { username, password } = form;
+  const loginUrl = `http://127.0.0.1:8000/api/login/?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
 
+  try {
+    const response = await fetch(loginUrl, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log("Login response:", result);
+
+    if (result.user === "doctor") {
+        console.log("Doctor");
+        navigate("/Profile");
+      } 
+    else if (result.user === "patient") {
+        window.location.href = "/patient-dashboard";
+      } 
+    else {
+        setError(result.error || "Invalid credentials.");
+      }
+    } 
     
-    
-    // --- REAL DJANGO BACKEND LOGIC (runs if IS_MOCK_ENABLED is false) ---
-    const csrfToken = Cookies.get('csrftoken');
-    
-    if (!csrfToken) {
-        setError("CSRF token is missing. Please ensure your backend is setting the cookie.");
-        setLoading(false);
-        return;
+    else {
+      setError("Server error. Please try again.");
     }
+  } catch (err) {
+    console.error("Network error:", err);
+    setError("Failed to connect to backend.");
+  } finally {
+    setLoading(false);
+  }
+};
 
-    // Single attempt without exponential backoff
-    try {
-        const response = await fetch(loginUrl, {
-            method: 'POST',
-            credentials: 'include', 
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken,
-            },
-            body: JSON.stringify({ username, password }),
-        });
-
-        if (response.ok) {
-            // 3. Handle Success
-            const result = await response.json();
-            console.log('Login successful!', result);
-            // Implemented redirection for real success
-            window.location.href = '/';
-        } else {
-            // 4. Handle Failure (e.g., bad credentials)
-            const errorData = await response.json();
-            const errorMessage = errorData.error || errorData.detail || "Invalid credentials or server error.";
-            setError(errorMessage);
-        }
-    } catch (error) {
-        // Handle persistent network issues (the original "Failed to fetch")
-        console.error('Network error during login:', error);
-        setError(`Failed to connect to the backend server at ${loginUrl}. Please ensure your Django server is running and check CORS settings.`);
-    } finally {
-        setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen w-full lg:flex font-[Inter] bg-gradient-to-r from-cyan-100 via-cyan-200 to-blue-100">
