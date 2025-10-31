@@ -4,17 +4,13 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-5cy+wr0egssd(7g7t35a_$-l&6p!$=6ztwnvysa-#43mhmn_(7'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -34,15 +30,23 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    # corsheaders middleware should come after SessionMiddleware and
+    # before CommonMiddleware so it can add the correct CORS headers.
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    "django.middleware.csrf.CsrfViewMiddleware",
 ]
+
+# CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:5173",
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'physioapp.urls'
 
@@ -121,28 +125,23 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# For letting Cross usage  of data.
-CORS_ORIGIN_ALLOW_ALL = True
-
-# Allow React dev server origin
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:5173",
-#     "http://127.0.0.1:5173",
-# ]
-
-# # If you want cookies (CSRF/session) to flow across origins:
-# CORS_ALLOW_CREDENTIALS = True
-
-# # CSRF trusted origins (Django 4+ requires this for cross-site POSTs)
-# CSRF_TRUSTED_ORIGINS = [
-#     "http://localhost:5173",
-#     "http://127.0.0.1:5173",
-# ]
-
-LOGIN_URL = '/login/'
+LOGIN_URL = '/api/login/'
 
 # The URL that handles the media served from MEDIA_ROOT, used for managing uploaded files.
 MEDIA_URL = '/media/'
 
 # The absolute filesystem path to the directory that will hold user-uploaded files.
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+# Security Settings
+SESSION_COOKIE_SAMESITE = 'Strict'
+CSRF_COOKIE_SAMESITE = 'Strict'
+CSRF_COOKIE_HTTPONLY = False
+SESSION_COOKIE_HTTPONLY = True
+# SESSION_COOKIE_SECURE = False
+# CSRF_COOKIE_SECURE = False
+
+# For production,
+# CSRF_COOKIE_HTTPONLY = True
+# SESSION_COOKIE_HTTPONLY = True
