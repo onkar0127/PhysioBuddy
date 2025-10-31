@@ -1,0 +1,50 @@
+
+
+.patients-container {
+  width: 80%;
+  margin: 30px auto;
+  background: #f1f2f4;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.patients-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.patients-table th,
+.patients-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+
+.patient-name {
+  font-weight: bold;
+  color: #222;
+}
+
+.exercise-item {
+  margin: 5px 0;
+}
+
+.exercise-status {
+  margin: 5px 0;
+  font-weight: 600;
+}
+
+.exercise-status.completed {
+  color: green;
+}
+
+.exercise-status.not-completed {
+  color: red;
+}

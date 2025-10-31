@@ -21,7 +21,7 @@ export default function Home() {
                 <h1 className="text-3xl font-bold text-gray-800">PhysioBuddy Home</h1>
                 <button
                     className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow"
-                    onClick={() => navigate("/signup")} // Step 3
+                    onClick={() => navigate("/login")} // Step 3
                 >
                     Login
                 </button>
