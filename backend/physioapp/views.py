@@ -7,7 +7,7 @@ from django.utils import timezone
 
 
 def login_api(request):
-    if request.method == 'POST':
+    if request.method =='post':
         try:
             # Access request.body (a binary object)
             data_bytes = request.body
@@ -21,7 +21,8 @@ def login_api(request):
             # Get the data
             username = data.get('username')
             password = data.get('password')
-
+            #username = User2@1234
+            #password = Iam4050
             # Authentication logic goes here...
             user = authenticate(request, username=username, password=password)
             if user is not None:
@@ -36,7 +37,36 @@ def login_api(request):
                     # User is a patient
                     return JsonResponse({'user': 'patient'}, status=200)
             else:
-                return JsonResponse({'error': 'User doesn\'t exists'}, status=404)
+                return JsonResponse({'error': 'User doesn\'t exists123'}, status=404)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    
+    #return JsonResponse({'error': 'Invalid request method'}, status=405)
+    
+    if request.method =='GET':
+        try:
+           
+            # Get the data
+            username = request.GET.get('username')
+            password = request.GET.get('password')
+            #username = User2@1234
+            #password = Iam4050
+            # Authentication logic goes here...
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                # Login the user
+                login(request, user)
+
+                # Check the user type: doctor or patient
+                if user.is_staff:
+                    # User is a doctor
+                    return JsonResponse({'user': 'doctor'}, status=200)
+                else:
+                    # User is a patient
+                    return JsonResponse({'user': 'patient'}, status=200)
+            else:
+                return JsonResponse({'error': 'User doesn\'t exists123'}, status=404)
 
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
@@ -140,6 +170,37 @@ def get_patient_list(request):
     ).select_related('patient__user', 'exercise')
 
     # Manually Serialize the QuerySet into a JSON-ready list
+    assignments_list = []
+    for assignment in assignments:
+        assignments_list.append({
+            'patient_username': assignment.patient.user.username,
+            'exercise_name': assignment.exercise.name,
+            'exercise_video_url': assignment.exercise.demo_video_url,
+            'target_reps': assignment.target_reps,
+            'is_completed': assignment.is_completed,
+            'date_assigned': assignment.date_assigned.isoformat() # Convert DateTimeField to string
+        })
+
+    # Return the list as a JsonResponse
+    return JsonResponse(assignments_list, safe=False, status=200)
+
+
+
+@login_required
+def get_exercise_list(request):
+    # Check if the user is patient
+    if  request.user.is_staff:
+        return JsonResponse({'error': 'Permission denied.'}, status=403)
+    try:
+        Patientobj = get_object_or_404(PatientProfile, user=request.user)
+    except Http404:
+        return JsonResponse({'error': 'Patient profile not found.'}, status=404)
+    #today = timezone.now().date()
+    assignments = AssignedExercise.objects.filter(
+        patient=Patientobj,
+       
+    ).select_related('exercise')
+    
     assignments_list = []
     for assignment in assignments:
         assignments_list.append({

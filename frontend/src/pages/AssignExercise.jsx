@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./AssignExercise.css";
 import { useNavigate } from "react-router-dom";
-//hhjkklkl
+
 const AssignExercise = () => {
   const navigate = useNavigate();
 
-  // Sample dropdown data — you can replace with backend data if needed
   const patientsList = ["Ramesh Patil", "Sita Desai", "Amit Sharma"];
   const exercisesList = ["Push Ups", "Squats", "Lunges", "Plank", "Sit Ups"];
 
@@ -15,19 +14,36 @@ const AssignExercise = () => {
     targetRepetition: ""
   });
 
+  const [csrfToken, setCsrfToken] = useState(""); // ✅ store CSRF token
   const [loading, setLoading] = useState(false);
 
-  // Handle input and dropdown changes
+  // ✅ Fetch CSRF token when component mounts
+  useEffect(() => {
+    const fetchCsrfToken = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/csrf-token", {
+          credentials: "include" // required to include cookies
+        });
+        const data = await response.json();
+        setCsrfToken(data.csrfToken);
+        console.log("CSRF Token fetched:", data.csrfToken);
+      } catch (error) {
+        console.error("Failed to fetch CSRF token:", error);
+      }
+    };
+    fetchCsrfToken();
+  }, []);
+
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // Handle form submission + Fetch API call
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
     if (!formData.patientName || !formData.exerciseName || !formData.targetRepetition) {
       alert("⚠️ Please fill all fields before submitting!");
       return;
@@ -39,8 +55,10 @@ const AssignExercise = () => {
       const response = await fetch("http://localhost:5000/assign-exercise", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "CSRF-Token": csrfToken // ✅ send CSRF token
         },
+        credentials: "include", // ✅ include cookies for verification
         body: JSON.stringify(formData)
       });
 
@@ -49,11 +67,9 @@ const AssignExercise = () => {
         console.log("✅ Server Response:", data);
         alert("Exercise assigned successfully!");
         setFormData({ patientName: "", exerciseName: "", targetRepetition: "" });
-
-        // Redirect to exercises page after successful submission
         navigate("/exercises");
       } else {
-        alert("❌ Failed to assign exercise. Try again.");
+        alert("❌ Failed to assign exercise. Invalid CSRF token or server error.");
       }
     } catch (error) {
       console.error("Error while sending data:", error);
