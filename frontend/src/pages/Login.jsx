@@ -41,7 +41,7 @@ export default function App() {
     // Set to 'true' to bypass network issues and test frontend logic.
     // Set to 'false' to try connecting to the real Django backend.
     const IS_MOCK_ENABLED = false; 
-    const loginUrl = 'http://127.0.0.1:8000/api/login/';
+    const loginUrl = 'http://127.0.0.1:8000/api/login/?username=';
 
     
     
@@ -57,7 +57,7 @@ export default function App() {
     // Single attempt without exponential backoff
     try {
         const response = await fetch(loginUrl, {
-            method: 'POST',
+            method: 'GET',
             credentials: 'include', 
             headers: {
                 'Content-Type': 'application/json',
