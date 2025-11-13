@@ -3,11 +3,12 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home.jsx';
 import Login from './pages/Login.jsx';
 import D_Profile from './pages/D_Profile.jsx';
+
 import AssignExercise from './pages/AssignExercise.jsx';
 import WebStream from './pages/Webstream.jsx';
 import ExerciseList from './pages/ExerciseList.jsx';
 import CustomerCare from './pages/CustomerCare.jsx';
-import PatientList from './pages/PatientList.jsx';
+import PatientList from './pages/PatientsList.jsx';
 
 
 function App() {
