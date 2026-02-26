@@ -1,40 +1,65 @@
-import React from "react";
-import "./CustomerCare.css";
+import React from 'react';
+import './CustomerCare.css';
 
-const CustomerCare = () => {
+export default function CustomerCare() {
+
   return (
-    <div className="page">
-      {/* Header Section */}
-      <div className="header">
-        <h1 className="title">Customer Care</h1>
-        <p className="subtitle">We are here to assist you 24/7</p>
-      </div>
+    <div className="customer-care">
+      {/* Header */}
+      <header className="cc-header">
+        <h1>Customer Care & Support</h1>
+        <p>We're here to help you with your physiotherapy journey</p>
+      </header>
 
-      {/* Cards Section */}
-      <div className="cards-container">
-        {/* Email Card */}
-        <div className="card">
-          <h2>Email Us</h2>
-          <p>support@healthcare.com</p>
-        </div>
+      {/* Contact Options */}
+      <section className="cc-section">
+        <h2>Contact Us</h2>
+        <div className="cc-contact-grid">
+          <div className="cc-contact-card">
+            <h3>📞 Call Us</h3>
+            <p>1-800-PHYSIO (749-7746)</p>
+            <p className="cc-subtitle">Mon-Fri: 8AM-8PM EST</p>
+          </div>
 
-        {/* Contact Number Card */}
-        <div className="card">
-          <h2>Call Us</h2>
-          <p>+91 98765 43210</p>
-        </div>
+          <div className="cc-contact-card">
+            <h3>✉️ Email</h3>
+            <p><a href="mailto:support@physioflow.com">support@physioflow.com</a></p>
+            <p className="cc-subtitle">Response within 24 hours</p>
+          </div>
 
-        {/* Details Card */}
-        <div className="card">
-          <h2>Our Details</h2>
-          <p>
-            We provide round-the-clock support for patients and doctors.  
-            Reach out anytime for queries, feedback, or assistance. Your satisfaction is our priority.
-          </p>
+          <div className="cc-contact-card">
+            <h3>💬 Live Chat</h3>
+            <p>Available during business hours</p>
+            <p className="cc-subtitle">Click the chat icon in the corner</p>
+          </div>
         </div>
-      </div>
+      </section>
+
+
+
+      {/* Support Hours */}
+      <section className="cc-section cc-hours">
+        <h2>Support Hours</h2>
+        <div className="cc-hours-grid">
+          <div className="cc-hours-item">
+            <h4>General Support</h4>
+            <p>Mon-Fri: 8AM - 8PM<br/>Sat: 9AM - 5PM<br/>Sun: 10AM - 4PM</p>
+          </div>
+          <div className="cc-hours-item">
+            <h4>Emergency</h4>
+            <p>Available 24/7<br/>Call: 1-800-PHYSIO<br/>Press 9 for emergency</p>
+          </div>
+          <div className="cc-hours-item">
+            <h4>Technical Support</h4>
+            <p>Mon-Fri: 7AM - 9PM<br/>Sat-Sun: 9AM - 6PM</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="cc-footer">
+        <p>&copy; 2024 PhysioFlow. All rights reserved.</p>
+      </footer>
     </div>
   );
-};
-
-export default CustomerCare;
+}
