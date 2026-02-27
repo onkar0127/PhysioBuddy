@@ -19,7 +19,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/Profile" element={<D_Profile />} />
-        <Route path='/patient-dashboard' element={<P_Profile/>}/>
+        <Route path="/patient-dashboard" element={<P_Profile />} />
         <Route path="/assign-exercise" element={<AssignExercise />} />
         <Route path='/live' element={<WebStream />}/>
         <Route path='/exerciseList' element={<ExerciseList/>}/>

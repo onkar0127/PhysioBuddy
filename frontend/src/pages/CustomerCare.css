@@ -1,66 +1,153 @@
-/* Page Background */
-.page {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #e0f7fa, #f1f8e9, #f3e5f5);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 50px 20px;
-  font-family: "Segoe UI", Arial, sans-serif;
+/* Customer Care Page Styles */
+
+.customer-care {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  line-height: 1.6;
+  background-color: #f5f5f5;
 }
 
 /* Header */
-.header {
+.cc-header {
+  background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+  color: white;
+  padding: 60px 20px;
   text-align: center;
-  margin-bottom: 50px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.title {
-  font-size: 36px;
+.cc-header h1 {
+  font-size: 2.5em;
+  margin-bottom: 15px;
   font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 8px;
 }
 
-.subtitle {
-  font-size: 16px;
-  color: #555;
+.cc-header p {
+  font-size: 1.1em;
+  opacity: 0.9;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-/* Cards Container */
-.cards-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 30px;
-  width: 100%;
+/* Section */
+.cc-section {
   max-width: 1000px;
+  margin: 60px auto;
+  padding: 0 20px;
 }
 
-/* Individual Card */
-.card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 30px 20px;
-  text-align: center;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.cc-section h2 {
+  font-size: 2em;
+  margin-bottom: 40px;
+  color: #0066cc;
+  border-bottom: 3px solid #00b366;
+  display: inline-block;
+  padding-bottom: 10px;
 }
 
-.card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+/* Contact Cards */
+.cc-contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 25px;
 }
 
-/* Card Text */
-.card h2 {
-  font-size: 22px;
-  margin-bottom: 12px;
-  color: #2c3e50;
+.cc-contact-card {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #00b366;
+  transition: all 0.3s ease;
+}
+
+.cc-contact-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.cc-contact-card h3 {
+  color: #0066cc;
+  margin-bottom: 15px;
+  font-size: 1.3em;
+}
+
+.cc-contact-card p {
+  margin-bottom: 10px;
+  color: #666;
+}
+
+.cc-contact-card p a {
+  color: #0066cc;
+  text-decoration: none;
   font-weight: 600;
 }
 
-.card p {
-  font-size: 15px;
-  color: #555;
-  line-height: 1.6;
+.cc-contact-card p a:hover {
+  text-decoration: underline;
+}
+
+.cc-subtitle {
+  font-size: 0.9em;
+  color: #999;
+  margin-top: 10px;
+}
+
+/* Support Hours */
+.cc-hours-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.cc-hours-item {
+  background: linear-gradient(135deg, #e6f9f0 0%, #e6f0ff 100%);
+  padding: 25px;
+  border-radius: 8px;
+  border-left: 4px solid #00b366;
+}
+
+.cc-hours-item h4 {
+  color: #0066cc;
+  margin-bottom: 15px;
+  font-size: 1.1em;
+}
+
+.cc-hours-item p {
+  color: #666;
+  line-height: 1.8;
+  margin: 0;
+}
+
+/* Footer */
+.cc-footer {
+  background-color: #1a1a2e;
+  color: white;
+  text-align: center;
+  padding: 30px 20px;
+  margin-top: 60px;
+}
+
+.cc-footer p {
+  margin: 0;
+  opacity: 0.9;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .cc-header h1 {
+    font-size: 1.8em;
+  }
+
+  .cc-section h2 {
+    font-size: 1.5em;
+  }
+
+  .cc-contact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-hours-grid {
+    grid-template-columns: 1fr;
+  }
 }
