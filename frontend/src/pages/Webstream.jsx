@@ -76,7 +76,7 @@ export default function WebcamStream() {
           <video ref={videoRef} muted playsInline style={{ width: 1000, background: "#000", transform: "scaleX(-1)" }} />
         </div>
         <div>
-          <div style={{ marginTop: 8 }}>Repetitions: {repCount}</div>
+          <div style={{ marginTop: 8, color:"black" }}>Repetitions: {repCount}</div>
         </div>
       </div>
       {/* Hidden canvas for encoding frames */}
