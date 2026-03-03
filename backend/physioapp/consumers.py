@@ -19,6 +19,12 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
         self.mp_pose = mp.solutions.pose
         self.pose = self.mp_pose.Pose()
 
+        # Dispatch table for exercises 
+        self.detectors = {
+            1: self.detect_bicep_curl, 
+            2: self.detect_quadriceps_stretch
+            }
+
         await self.accept()
 
     async def disconnect(self, close_code):
@@ -47,28 +53,9 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
 
             h, w = frame.shape[:2]
             lm = results.pose_landmarks.landmark
-            L = self.mp_pose.PoseLandmark
-
-            shoulder = lm[L.RIGHT_SHOULDER]
-            elbow    = lm[L.RIGHT_ELBOW]
-            wrist    = lm[L.RIGHT_WRIST]
-
-            sx, sy = int(shoulder.x * w), int(shoulder.y * h)
-            ex, ey = int(elbow.x * w),    int(elbow.y * h)
-            wx, wy = int(wrist.x * w),    int(wrist.y * h)
-
-            angle = self.calculate_angle((sx, sy), (ex, ey), (wx, wy))
-
-            # Rep logic
-            if angle > self.UPPER_THRESHOLD and not self.ready_to_count:
-                self.ready_to_count = True
-                self.is_fold = False
-            elif angle < self.LOWER_THRESHOLD and self.ready_to_count and not self.is_fold:
-                self.is_fold = True
-            elif angle > self.UPPER_THRESHOLD and self.ready_to_count and self.is_fold:
-                self.counter += 1
-                self.ready_to_count = False
-                self.is_fold = False
+            # Dispatch to the correct detector 
+            detector = self.detectors.get(exercise_id) 
+            if detector: detector(lm, h, w)
 
         await self.send(text_data=json.dumps({
             # "frame": b64_out,
@@ -76,6 +63,7 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
             "exercise_id": exercise_id
         }))
 
+    # ------------------ Angle Calculation Logic ---------------------
     def calculate_angle(self, a, b, c):
         a, b, c = np.array(a), np.array(b), np.array(c)
         ba, bc = a - b, c - b
@@ -85,3 +73,34 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
         cosang = np.dot(ba, bc) / denom
         ang = np.arccos(np.clip(cosang, -1.0, 1.0))
         return float(np.degrees(ang))
+    
+
+    # -------------- Bicep Curl Detection Logic -------------------
+    def detect_bicep_curl(self, lm, h, w):
+        L = self.mp_pose.PoseLandmark
+
+        shoulder = lm[L.RIGHT_SHOULDER]
+        elbow    = lm[L.RIGHT_ELBOW]
+        wrist    = lm[L.RIGHT_WRIST]
+
+        sx, sy = int(shoulder.x * w), int(shoulder.y * h)
+        ex, ey = int(elbow.x * w),    int(elbow.y * h)
+        wx, wy = int(wrist.x * w),    int(wrist.y * h)
+
+        angle = self.calculate_angle((sx, sy), (ex, ey), (wx, wy))
+
+        # Rep logic
+        if angle > self.UPPER_THRESHOLD and not self.ready_to_count:
+            self.ready_to_count = True
+            self.is_fold = False
+        elif angle < self.LOWER_THRESHOLD and self.ready_to_count and not self.is_fold:
+            self.is_fold = True
+        elif angle > self.UPPER_THRESHOLD and self.ready_to_count and self.is_fold:
+            self.counter += 1
+            self.ready_to_count = False
+            self.is_fold = False
+
+
+    # ------------------ Quadriceps Stretch Detection Logic --------------------
+    def detect_quadriceps_stretch(self, lm, h, w):
+        print("detect_quadriceps_stretch")
