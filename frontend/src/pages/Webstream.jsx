@@ -61,7 +61,7 @@ export default function WebcamStream() {
       const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
       const base64 = dataUrl.split(",")[1];
 
-      wsRef.current.send(JSON.stringify({ frame: base64, exercise_id: 1 }));
+      wsRef.current.send(JSON.stringify({ frame: base64, exercise_id: 2 }));
       setTimeout(send, 1000 / FPS);
     };
     send();
