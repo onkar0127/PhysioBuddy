@@ -9,6 +9,7 @@ import WebStream from './pages/Webstream.jsx';
 import ExerciseList from './pages/ExerciseList.jsx';
 import CustomerCare from './pages/CustomerCare.jsx';
 import PatientList from './pages/PatientsList.jsx';
+import Landingpage from './pages/Landingpage.jsx';
 
 
 function App() {
@@ -16,10 +17,11 @@ function App() {
     <BrowserRouter>
       <Routes>
 
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Landingpage />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/Profile" element={<D_Profile />} />
-        <Route path="/patient-dashboard" element={<P_Profile />} />
+        <Route path="/doctor-profile" element={<D_Profile />} />
+        <Route path="/patient-profile" element={<P_Profile />} />
         <Route path="/assign-exercise" element={<AssignExercise />} />
         <Route path='/live' element={<WebStream />}/>
         <Route path='/exerciseList' element={<ExerciseList/>}/>
