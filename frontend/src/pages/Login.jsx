@@ -54,10 +54,10 @@ const handleSubmit = async (e) => {
 
     if (result.user === "doctor") {
         console.log("Doctor");
-        navigate("/Profile");
+        navigate("/doctor-profile");
       } 
     else if (result.user === "patient") {
-        window.location.href = "/patient-dashboard";
+        window.location.href = "/patient-profile";
       } 
     else {
         setError(result.error || "Invalid credentials.");
