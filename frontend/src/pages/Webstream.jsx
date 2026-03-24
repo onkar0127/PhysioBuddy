@@ -10,7 +10,7 @@ export default function WebcamStream() {
   // const [processedSrc, setProcessedSrc] = useState(null);
 
   useEffect(() => {
-    // 1) Get camera
+    // 1) Get camera gghgetUserMedia stream
     (async () => {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 640, height: 360 }, audio: false });
       videoRef.current.srcObject = stream;
@@ -69,7 +69,7 @@ export default function WebcamStream() {
 
   return (
     <div style={{ display: "grid", gap: 12, maxWidth: 1000 }}>
-      <div style={{ fontWeight: 600 }}>WebSocket: {connected ? "Connected" : "Disconnected"}</div>
+      <div style={{ fontWeight: 600 }}>WebSocket: {connected ? "Connected1" : "Disconnected1"}</div>
       <div style={{ display: "flex", gap: 12 }}>
         <div>
           <div>Local webcam</div>
