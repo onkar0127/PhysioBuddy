@@ -30,7 +30,7 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
             2: self.detect_quadriceps_stretch,
             3: self.detect_shoulder_exercise,                   
             4: self.detect_squat,
-            
+            5: self.standing_knee_lift,
             }
 
         await self.accept()
@@ -282,3 +282,7 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
             self.ready_to_count = False
             self.is_fold = False
 
+
+    # ------------------ Standing Knee Lift Detection Logic --------------------
+    def standing_knee_lift(self, lm, h, w):
+        print("Detecting Standing Knee Lift...")
