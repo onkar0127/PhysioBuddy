@@ -61,7 +61,7 @@ export default function WebcamStream() {
       const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
       const base64 = dataUrl.split(",")[1];
 
-      wsRef.current.send(JSON.stringify({ frame: base64, exercise_id: 2 }));
+      wsRef.current.send(JSON.stringify({ frame: base64, exercise_id: 4 }));
       setTimeout(send, 1000 / FPS);
     };
     send();
@@ -69,7 +69,7 @@ export default function WebcamStream() {
 
   return (
     <div style={{ display: "grid", gap: 12, maxWidth: 1000 }}>
-      <div style={{ fontWeight: 600 }}>WebSocket: {connected ? "Connected1" : "Disconnected1"}</div>
+      <div style={{ fontWeight: 600 }}>WebSocket: {connected ? "Connected" : "Disconnected"}</div>
       <div style={{ display: "flex", gap: 12 }}>
         <div>
           <div>Local webcam</div>

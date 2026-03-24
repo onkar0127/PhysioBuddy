@@ -12,8 +12,21 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
         self.counter = 0
         self.ready_to_count = False
         self.is_fold = False
-        self.UPPER_THRESHOLD = 150
-        self.LOWER_THRESHOLD = 60  # 35 for bicep curl
+
+        # Constants:
+        # For Bicep Curl Exercise
+        self.BICEP_CURL_UPPER_THRESHOLD = 150
+        self.BICEP_CURL_LOWER_THRESHOLD = 35
+        # For Quadriceps Stretch Exercise
+        self.QUADRICEP_UPPER_THRESHOLD = 150
+        self.QUADRICEP_LOWER_THRESHOLD = 60
+        # For Shoulder Exercise
+        self.STRAIGHT_SHOULDER_THRESHOLD = 160
+        # For Squat Exercise
+        self.UPPER_SQUAT_THRESHOLD = 150
+        self.SQUAT_KNEE_ANGLE = 100
+        self.SQUAT_HIP_ANGLE = 100
+        # For Standing Knee Lift
 
         # Lateral raise overhead — per arm flags
         self.op_arms_raised = False
@@ -91,25 +104,24 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
         elbow    = lm[L.RIGHT_ELBOW]
         wrist    = lm[L.RIGHT_WRIST]
 
-        sx, sy = int(shoulder.x * w), int(shoulder.y * h)
+        shoulder_x, shoulder_y = int(shoulder.x * w), int(shoulder.y * h)
         ex, ey = int(elbow.x * w),    int(elbow.y * h)
         wx, wy = int(wrist.x * w),    int(wrist.y * h)
 
-        angle = self.calculate_angle((sx, sy), (ex, ey), (wx, wy))
+        angle = self.calculate_angle((shoulder_x, shoulder_y), (ex, ey), (wx, wy))
 
         # Rep logic
-        if angle > self.UPPER_THRESHOLD and not self.ready_to_count:
+        if angle > self.BICEP_CURL_UPPER_THRESHOLD and not self.ready_to_count:
             self.ready_to_count = True
             self.is_fold = False
-        elif angle < self.LOWER_THRESHOLD and self.ready_to_count and not self.is_fold:
+        elif angle < self.BICEP_CURL_LOWER_THRESHOLD and self.ready_to_count and not self.is_fold:
             self.is_fold = True
-        elif angle > self.UPPER_THRESHOLD and self.ready_to_count and self.is_fold:
+        elif angle > self.BICEP_CURL_UPPER_THRESHOLD and self.ready_to_count and self.is_fold:
             self.counter += 1
             self.ready_to_count = False
             self.is_fold = False
 
- 
- 
+
     #------------------- shoulder exercise  --------------------
     def detect_shoulder_exercise(self, lm, h, w):
         L = self.mp_pose.PoseLandmark
@@ -128,19 +140,19 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
             return
 
         # --- Normalized (x, y) tuples — matches your calculate_angle signature ---
-        l_shoulder_pt = (l_shoulder.x, l_shoulder.y)
-        l_elbow_pt    = (l_elbow.x,    l_elbow.y)
-        l_wrist_pt    = (l_wrist.x,    l_wrist.y)
+        l_shoulder_pt = (l_shoulder.x*w, l_shoulder.y*h)
+        l_elbow_pt    = (l_elbow.x*w,    l_elbow.y*h)
+        l_wrist_pt    = (l_wrist.x*w,    l_wrist.y*h)
 
-        r_shoulder_pt = (r_shoulder.x, r_shoulder.y)
-        r_elbow_pt    = (r_elbow.x,    r_elbow.y)
-        r_wrist_pt    = (r_wrist.x,    r_wrist.y)
+        r_shoulder_pt = (r_shoulder.x*w, r_shoulder.y*h)
+        r_elbow_pt    = (r_elbow.x*w,    r_elbow.y*h)
+        r_wrist_pt    = (r_wrist.x*w,    r_wrist.y*h)
 
         # --- Step 1: Check both arms are straight ---
         left_angle  = self.calculate_angle(l_shoulder_pt, l_elbow_pt, l_wrist_pt)
         right_angle = self.calculate_angle(r_shoulder_pt, r_elbow_pt, r_wrist_pt)
 
-        arms_straight = left_angle > 160 and right_angle > 160
+        arms_straight = left_angle > self.STRAIGHT_SHOULDER_THRESHOLD and right_angle > self.STRAIGHT_SHOULDER_THRESHOLD
 
         if not arms_straight:
             # Arms are bent — ignore frame, do not change state
@@ -173,7 +185,6 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
 
         # Phase 0 → 1: both arms raised up first time
         if both_down and not self.op_arms_raised:
-            #self.op_arms_raised = True
             self.op_arms_down   = True
             print("[PHASE 1] Both arms down → ready for raise")
 
@@ -213,14 +224,14 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
         # 1. Knee is folded (angle < threshold)
         # 2. Foot is lifted upward (ankle above knee → ay < ky)
         # 3. Foot is behind hip (ankle.x < hip.x for right leg, opposite for left)
-        if angle > self.UPPER_THRESHOLD and not self.ready_to_count:
+        if angle > self.QUADRICEP_UPPER_THRESHOLD and not self.ready_to_count:
             self.ready_to_count = True
             self.is_fold = False
 
-        elif angle < 60 and ay < ky and ax < hx and self.ready_to_count and not self.is_fold:
+        elif angle < self.QUADRICEP_LOWER_THRESHOLD and ay < ky and ax < hx and self.ready_to_count and not self.is_fold:
             self.is_fold = True
         
-        elif angle > self.UPPER_THRESHOLD and self.ready_to_count and self.is_fold:
+        elif angle > self.QUADRICEP_UPPER_THRESHOLD and self.ready_to_count and self.is_fold:
             self.counter += 1
             self.ready_to_count = False
             self.is_fold = False
@@ -232,51 +243,51 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
         L = self.mp_pose.PoseLandmark
 
         # Landmarks for right side (mirror for left if needed)
-        r_hip     = lm[L.RIGHT_HIP]
-        r_knee    = lm[L.RIGHT_KNEE]
-        r_ankle   = lm[L.RIGHT_ANKLE]
-        l_hip     = lm[L.RIGHT_HIP]
+        right_hip     = lm[L.RIGHT_HIP]
+        right_knee    = lm[L.RIGHT_KNEE]
+        right_ankle   = lm[L.RIGHT_ANKLE]
+        left_hip     = lm[L.RIGHT_HIP]
         l_knee    = lm[L.LEFT_KNEE]
-        l_ankle   = lm[L.LEFT_ANKLE]
+        left_ankle   = lm[L.LEFT_ANKLE]
         shoulder= lm[L.LEFT_SHOULDER]
 
         # Right side coordinates
         # Convert normalized coords → pixel coords
-        r_hx, r_hy = int(r_hip.x * w), int(r_hip.y * h)
-        r_kx, r_ky = int(r_knee.x * w), int(r_knee.y * h)
-        r_ax, r_ay = int(r_ankle.x * w), int(r_ankle.y * h)
+        right_hip_x, right_hip_y = int(right_hip.x * w), int(right_hip.y * h)
+        rignt_knee_x, right_knee_y = int(right_knee.x * w), int(right_knee.y * h)
+        right_ankle_x, right_ankle_y = int(right_ankle.x * w), int(right_ankle.y * h)
 
         # Left side coordinates
-        l_hx, l_hy = int(l_hip.x * w), int(l_hip.y * h)
-        l_kx, l_ky = int(l_knee.x * w), int(l_knee.y * h)
-        l_ax, l_ay = int(l_ankle.x * w), int(l_ankle.y * h)
+        left_hip_x, left_hip_y = int(left_hip.x * w), int(left_hip.y * h)
+        left_knee_x, left_knee_y = int(l_knee.x * w), int(l_knee.y * h)
+        left_ankle_x, left_ankle_y = int(left_ankle.x * w), int(left_ankle.y * h)
         
         # Shoulder Coordinates
-        sx, sy = int(shoulder.x * w), int(shoulder.y * h)
+        shoulder_x, shoulder_y = int(shoulder.x * w), int(shoulder.y * h)
 
         # Right Joint Angles
-        r_h_angle = self.calculate_angle((r_hx, r_hy), (r_kx, r_ky), (r_ax, r_ay))   # Right hip–knee–ankle
-        r_k_angle = self.calculate_angle((r_kx, r_ky), (r_hx, r_hy), (sx, sy))   # Right knee–hip–shoulder
+        r_h_angle = self.calculate_angle((right_hip_x, right_hip_y), (rignt_knee_x, right_knee_y), (right_ankle_x, right_ankle_y))   # Right hip–knee–ankle
+        r_k_angle = self.calculate_angle((rignt_knee_x, right_knee_y), (right_hip_x, right_hip_y), (shoulder_x, shoulder_y))   # Right knee–hip–shoulder
 
         # Left Joint Angles
-        l_h_angle = self.calculate_angle((l_hx, l_hy), (l_kx, l_ky), (l_ax, l_ay))   # Left hip–knee–ankle
-        l_k_angle = self.calculate_angle((l_kx, l_ky), (l_hx, l_hy), (sx, sy))   # Left knee–hip–shoulder
+        l_h_angle = self.calculate_angle((left_hip_x, left_hip_y), (left_knee_x, left_knee_y), (left_ankle_x, left_ankle_y))   # Left hip–knee–ankle
+        l_k_angle = self.calculate_angle((left_knee_x, left_knee_y), (left_hip_x, left_hip_y), (shoulder_x, shoulder_y))   # Left knee–hip–shoulder
 
         # Torso angle (shoulder–hip–ankle)
-        r_torso_angle = self.calculate_angle((sx, sy), (r_hx, r_hy), (r_ax, r_ay))
-        l_torso_angle = self.calculate_angle((sx, sy), (l_hx, l_hy), (l_ax, l_ay))
+        r_torso_angle = self.calculate_angle((shoulder_x, shoulder_y), (right_hip_x, right_hip_y), (right_ankle_x, right_ankle_y))
+        l_torso_angle = self.calculate_angle((shoulder_x, shoulder_y), (left_hip_x, left_hip_y), (left_ankle_x, left_ankle_y))
 
         # Rep logic
-        if (r_h_angle > 150 and r_k_angle > 150) and (l_h_angle > 150 and l_k_angle > 150) and not self.ready_to_count:
+        if (r_h_angle > self.UPPER_SQUAT_THRESHOLD and r_k_angle > self.UPPER_SQUAT_THRESHOLD) and (l_h_angle > self.UPPER_SQUAT_THRESHOLD and l_k_angle > self.UPPER_SQUAT_THRESHOLD) and not self.ready_to_count:
             # Standing straight (reset position)
             self.ready_to_count = True
             self.is_fold = False
 
-        elif (r_h_angle < 80 and r_k_angle < 100 and r_hy > r_ky) and (l_h_angle < 80 and l_k_angle < 100 and l_hy > l_ky) and self.ready_to_count and not self.is_fold and (r_torso_angle>120 or l_torso_angle>120):
+        elif (r_h_angle < self.SQUAT_HIP_ANGLE and r_k_angle < self.SQUAT_KNEE_ANGLE and right_hip_y >= right_knee_y) and (l_h_angle < self.SQUAT_HIP_ANGLE and l_k_angle < self.SQUAT_KNEE_ANGLE and left_hip_y >= left_knee_y) and self.ready_to_count and not self.is_fold:
             # Squat down detected (hip lower than knee, angles small)
             self.is_fold = True
 
-        elif (r_h_angle > 150 and r_k_angle > 150) and (l_h_angle > 150 and l_k_angle > 150) and self.ready_to_count and self.is_fold:
+        elif (r_h_angle > self.UPPER_SQUAT_THRESHOLD and r_k_angle > self.UPPER_SQUAT_THRESHOLD) and (l_h_angle > self.UPPER_SQUAT_THRESHOLD and l_k_angle > self.UPPER_SQUAT_THRESHOLD) and self.ready_to_count and self.is_fold:
             # Back to standing → count one squat
             self.counter += 1
             self.ready_to_count = False
