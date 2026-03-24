@@ -72,18 +72,11 @@ import React, { useState, useEffect } from 'react';
 
 // Single export function
 export default function P_DoctorProfile() {
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState(() => {
+  return localStorage.getItem('theme') || 'dark';}); 
   const [doctor, setDoctor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Use useEffect to check for a saved theme in local storage on initial load
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      setTheme(savedTheme);
-    }
-  }, []);
 
   // Use useEffect to save the current theme to local storage whenever it changes
   useEffect(() => {
@@ -187,7 +180,7 @@ export default function P_DoctorProfile() {
             {/* Home Link and Theme Toggle Button */}
             <div className="flex items-center space-x-4">
               <div className="hidden sm:block">
-                <a href="/" className={`font-medium transition-colors duration-200 ${theme === 'dark' ? 'text-gray-300 hover:text-indigo-400' : 'text-gray-600 hover:text-indigo-600'}`}>Home</a>
+                <a href="/home" className={`font-medium transition-colors duration-200 ${theme === 'dark' ? 'text-gray-300 hover:text-indigo-400' : 'text-gray-600 hover:text-indigo-600'}`}>Home</a>
               </div>
 
               {/* Theme Toggle Button */}
@@ -214,7 +207,7 @@ export default function P_DoctorProfile() {
           <div className="flex flex-col md:flex-row gap-8">
 
             {/* --- Left Sidebar (Doctor Details) --- */}
-            <div className={`md:w-1/4 w-full h-fit sticky top-32 ${cardClasses}`}>
+            <div className={`md:w-1/4 w-full h-50 sticky  ${cardClasses}`}>
               <div className="flex flex-col items-center">
                 {/* Doctor Image Circle - Now has a conditional border */}
                 <div className={`w-32 h-32 rounded-full overflow-hidden mb-4 border-4 shadow-md ${theme === 'dark' ? 'border-indigo-600' : 'border-indigo-200'}`}>
@@ -277,10 +270,8 @@ export default function P_DoctorProfile() {
             </div>
 
             {/* --- Right Content Area (Scrollable) --- */}
-            <div className={`flex-1 ${cardClasses} max-h-[calc(113vh-200px)] overflow-y-auto`}>
+            <div className={`flex-1 ${cardClasses} max-h-fit  sticky top-32 `}>
               <h1 className="text-3xl font-bold mb-6">Doctor Profile</h1>
-
-             
 
               {/* Bio Section */}
               <div className={`p-6 rounded-lg border mb-6 ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-100 border-gray-200'}`}>

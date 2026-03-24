@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 // Single export function
 export default function P_Profile() {
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState(() => {return localStorage.getItem('theme') || 'dark';});
 
   // Use useEffect to check for a saved theme in local storage on initial load
   useEffect(() => {
@@ -67,7 +67,7 @@ export default function P_Profile() {
             {/* Home Link and Theme Toggle Button */}
             <div className="flex items-center space-x-4">
               <div className="hidden sm:block">
-                <a href="#" className={`font-medium transition-colors duration-200 ${theme === 'dark' ? 'text-gray-300 hover:text-indigo-400' : 'text-gray-600 hover:text-indigo-600'}`}>Home</a>
+                <a href="/home" className={`font-medium transition-colors duration-200 ${theme === 'dark' ? 'text-gray-300 hover:text-indigo-400' : 'text-gray-600 hover:text-indigo-600'}`}>Home</a>
               </div>
 
               {/* Theme Toggle Button */}
