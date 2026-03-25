@@ -121,7 +121,7 @@ def patient_profile_api(request):
 def doctor_profile_api(request):
     if not request.user.is_authenticated:
         return JsonResponse(
-            {"success": False, "error": "Authentication required"},
+            {"error": "Authentication required"},
             status=401
         )
 
@@ -131,20 +131,17 @@ def doctor_profile_api(request):
 
         # 3. Build response
         doctor_details = {
-            "success": True,
-            "data": {
-                "doctor_name": doctor.user.username,
-                "phone_number": doctor.phone_number,
-                "email": doctor.user.email,
-                "specialization": doctor.speciality,
-                "qualification": doctor.qualification,
-            },
+            "doctor_name": doctor.user.username,
+            "phone_number": doctor.phone_number,
+            "email": doctor.user.email,
+            "specialization": doctor.speciality,
+            "qualification": doctor.qualification,
         }
         return JsonResponse(doctor_details, status=200)
 
     except Http404:
         return JsonResponse(
-            {"success": False, "error": "Doctor profile not found"},
+            {"error": "Doctor profile not found"},
             status=404
         )
 
