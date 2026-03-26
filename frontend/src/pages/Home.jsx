@@ -143,7 +143,7 @@ export default function Home() {
                         : "bg-yellow-100 text-yellow-700"
                     }`}
                   >
-                    {exercise.status}
+                    {exercise.status} 
                   </span>
 
                   <button className="px-4 py-1.5 text-xs font-semibold rounded-full text-white bg-gradient-to-r from-cyan-600 to-blue-500 hover:from-cyan-700 hover:to-blue-600 transition transform hover:scale-105">
