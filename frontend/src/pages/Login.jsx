@@ -57,7 +57,7 @@ const handleSubmit = async (e) => {
         navigate("/doctor-profile");
       } 
     else if (result.user === "patient") {
-        window.location.href = "/patient-profile";
+        window.location.href = "/patient-home";
       } 
     else {
         setError(result.error || "Invalid credentials.");

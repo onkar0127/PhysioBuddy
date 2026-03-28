@@ -10,6 +10,7 @@ import ExerciseList from './pages/ExerciseList.jsx';
 import CustomerCare from './pages/CustomerCare.jsx';
 import PatientList from './pages/PatientsList.jsx';
 import Landingpage from './pages/Landingpage.jsx';
+import LiveSession from './pages/livesession.jsx';
 
 
 function App() {
@@ -18,15 +19,16 @@ function App() {
       <Routes>
 
         <Route path="/" element={<Landingpage />} />
-        <Route path="/home" element={<Home />} />
+        <Route path="/patient-home" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/doctor-profile" element={<D_Profile />} />
         <Route path="/patient-profile" element={<P_Profile />} />
         <Route path="/assign-exercise" element={<AssignExercise />} />
         <Route path='/live' element={<WebStream />}/>
-        <Route path='/exerciseList' element={<ExerciseList/>}/>
-        <Route path='/customercare' element={<CustomerCare/>}/>
-        <Route path='/patientlist' element={<PatientList/>}/>
+        <Route path='/exercise-list' element={<ExerciseList/>}/>
+        <Route path='/customer-care' element={<CustomerCare/>}/>
+        <Route path='/patient-list' element={<PatientList/>}/>
+        <Route path="/live2" element={<LiveSession/>}/>
         
 
 

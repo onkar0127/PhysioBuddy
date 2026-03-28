@@ -109,11 +109,11 @@ def patient_profile_api(request):
                 'email': patient.user.email, 
                 'dob': patient.date_of_birth, 
                 'gender': patient.gender,
-                'assigned doctor': patient.doctor.id,
+                'assigned doctor': patient.doctor.user.username,
                 'height' : patient.height, 
                 'weight' : patient.weight, 
                 'bg' : patient.blood_group, 
-                'patient image' : patient.image.url if patient.image else None
+                # 'patient image' : patient.image.url if patient.image else None
             }        
     return JsonResponse(patient_details, status=200)
 

@@ -10,6 +10,7 @@ import math
 class ExerciseConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.counter = 0
+        self.target_reps = 0
         self.ready_to_count = False
         self.is_fold = False
 
@@ -57,6 +58,7 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         b64 = data.get("frame")
         exercise_id = data.get("exercise_id")
+        self.target_reps = data.get("target")
 
         if not b64:
             return
@@ -111,15 +113,18 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
         angle = self.calculate_angle((shoulder_x, shoulder_y), (ex, ey), (wx, wy))
 
         # Rep logic
-        if angle > self.BICEP_CURL_UPPER_THRESHOLD and not self.ready_to_count:
-            self.ready_to_count = True
-            self.is_fold = False
-        elif angle < self.BICEP_CURL_LOWER_THRESHOLD and self.ready_to_count and not self.is_fold:
-            self.is_fold = True
-        elif angle > self.BICEP_CURL_UPPER_THRESHOLD and self.ready_to_count and self.is_fold:
-            self.counter += 1
-            self.ready_to_count = False
-            self.is_fold = False
+        if self.counter < self.target_reps:
+            if angle > self.BICEP_CURL_UPPER_THRESHOLD and not self.ready_to_count:
+                self.ready_to_count = True
+                self.is_fold = False
+            elif angle < self.BICEP_CURL_LOWER_THRESHOLD and self.ready_to_count and not self.is_fold:
+                self.is_fold = True
+            elif angle > self.BICEP_CURL_UPPER_THRESHOLD and self.ready_to_count and self.is_fold:
+                self.counter += 1
+                self.ready_to_count = False
+                self.is_fold = False
+        else:
+            print(f"Target of {self.target_reps} reps reached!")
 
 
     #------------------- shoulder exercise  --------------------
@@ -292,8 +297,58 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
             self.counter += 1
             self.ready_to_count = False
             self.is_fold = False
-
-
+ 
     # ------------------ Standing Knee Lift Detection Logic --------------------
     def standing_knee_lift(self, lm, h, w):
-        print("Detecting Standing Knee Lift...")
+        L = self.mp_pose.PoseLandmark
+
+        left_hip    = lm[L.LEFT_HIP]
+        left_knee   = lm[L.LEFT_KNEE]
+        left_ankle  = lm[L.LEFT_ANKLE]
+
+        right_hip   = lm[L.RIGHT_HIP]
+        right_knee  = lm[L.RIGHT_KNEE]
+        right_ankle = lm[L.RIGHT_ANKLE]
+
+        key_points = (left_hip, left_knee, left_ankle,
+                      right_hip, right_knee, right_ankle)
+        if any(pt.visibility < 0.5 for pt in key_points):
+            return
+
+        # ── Pixel coordinates ────────────────────────────────────────────────
+        lhx, lhy = int(left_hip.x   * w), int(left_hip.y   * h)
+        lkx, lky = int(left_knee.x  * w), int(left_knee.y  * h)
+        lax, lay = int(left_ankle.x * w), int(left_ankle.y * h)
+
+        rhx, rhy = int(right_hip.x   * w), int(right_hip.y   * h)
+        rkx, rky = int(right_knee.x  * w), int(right_knee.y  * h)
+        rax, ray = int(right_ankle.x * w), int(right_ankle.y * h)
+
+        # ── Knee angles (hip – knee – ankle) ─────────────────────────────────
+        left_angle  = self.calculate_angle((lhx, lhy), (lkx, lky), (lax, lay))
+        right_angle = self.calculate_angle((rhx, rhy), (rkx, rky), (rax, ray))
+
+        # ── Thresholds ───────────────────────────────────────────────────────
+        # Leg is "straight / down" when knee angle is large (> 150 °)
+        STRAIGHT_THRESHOLD = 150
+        # Knee is "lifted to 90 °" when angle drops below 95 °
+        LIFT_THRESHOLD = 95
+
+        # Use whichever leg is actively lifting (smaller angle = more bent)
+        active_angle = min(left_angle, right_angle)
+
+        # ── Rep state machine (mirrors bicep curl / quadriceps logic) ────────
+        # Phase 0 → 1 : both legs straight → ready to count
+        if active_angle > STRAIGHT_THRESHOLD and not self.ready_to_count:
+            self.ready_to_count = True
+            self.is_fold = False
+
+        # Phase 1 → 2 : active knee reaches (or passes) 90 °
+        elif active_angle < LIFT_THRESHOLD and self.ready_to_count and not self.is_fold:
+            self.is_fold = True
+
+        # Phase 2 → 0 : leg returns to straight → count rep
+        elif active_angle > STRAIGHT_THRESHOLD and self.ready_to_count and self.is_fold:
+            self.counter += 1
+            self.ready_to_count = False
+            self.is_fold = False
