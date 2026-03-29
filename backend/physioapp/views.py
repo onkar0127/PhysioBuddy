@@ -140,6 +140,13 @@ def doctor_profile_api(request):
             "email": doctor.user.email,
             "specialization": doctor.speciality,
             "qualification": doctor.qualification,
+            "gender": doctor.gender,
+            "city": doctor.city,
+            "hospital_name": doctor.hospital_name,
+            "experience_years": doctor.experience_years,
+            "professional_summary": doctor.professional_summary,
+            "doctor_image": doctor.image_base64
+
         }
         return JsonResponse(doctor_details, status=200)
 
@@ -236,3 +243,27 @@ def update_patient_image(request):
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
             
     return JsonResponse({'error': 'Invalid method'}, status=405)
+
+@csrf_exempt 
+def update_doctor_image(request):
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Not logged in'}, status=401)
+            
+        try:
+            # Parse the incoming JSON from React
+            data = json.loads(request.body)
+            base64_string = data.get('doctor_image')
+
+            # Find the doctor and update the field
+            doctor = get_object_or_404(DoctorProfile, user=request.user)
+            doctor.image_base64 = base64_string
+            doctor.save()
+
+            return JsonResponse({'success': 'Image updated successfully'}, status=200)
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+            
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
