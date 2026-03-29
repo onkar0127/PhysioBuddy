@@ -9,6 +9,15 @@ class DoctorProfile(models.Model):
     qualification = models.CharField(max_length=255)
     speciality = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
+    image_base64 = models.TextField(null=True, blank=True)
+    gender = models.CharField(max_length=10, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)  
+    hospital_name = models.CharField(max_length=255, blank=True, null=True)
+    experience_years = models.IntegerField(max_length=3,null=True, blank=True)
+    professional_summary = models.TextField(null=True)
+    additional_info = models.TextField(null=True)
+
+
 
     def __str__(self):
         return self.user.username

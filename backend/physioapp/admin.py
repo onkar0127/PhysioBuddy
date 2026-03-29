@@ -11,7 +11,7 @@ class CustomUserAdmin(DefaultUserAdmin):
 @admin.register(DoctorProfile)
 class DoctorProfileAdmin(admin.ModelAdmin):
     # Displays these fields in the admin list view
-    list_display = ('id', 'user', 'qualification', 'speciality', 'phone_number')
+    list_display = ('id', 'user', 'qualification', 'speciality', 'phone_number','gender', 'city', 'hospital_name', 'experience_years', 'professional_summary', 'additional_info')
     # Adds a search bar for these fields
     search_fields = ('user__username', 'speciality')
     # Filters by speciality
