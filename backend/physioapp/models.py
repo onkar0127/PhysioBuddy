@@ -41,7 +41,7 @@ class PatientProfile(models.Model):
     weight = models.IntegerField(null=True)
     blood_group = models.CharField(max_length=5, choices=BLOOD_TYPES, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
-    image = models.ImageField(null=True, blank=True)
+    image_base64 = models.TextField(null=True, blank=True)  
     doctor = models.ForeignKey(
         DoctorProfile,
         on_delete=models.SET_NULL, # If the doctor is deleted, the patient is not.
