@@ -4,6 +4,8 @@ from django.http import JsonResponse, Http404
 from django.shortcuts import get_object_or_404
 from .models import PatientProfile, DoctorProfile, AssignedExercise
 from django.utils import timezone
+import base64
+from django.views.decorators.csrf import csrf_exempt
 
 
 def login_api(request):
@@ -102,18 +104,20 @@ def patient_profile_api(request):
         patient = get_object_or_404(PatientProfile, user=request.user)
     except Http404:
         return JsonResponse({'error': 'Patient profile not found'}, status=404)
+    
 
     patient_details = {
-                'patient name': patient.user.username, 
-                'phone number': patient.phone_number, 
+                'patient_name': patient.user.username, 
+                'phone_number': patient.phone_number, 
                 'email': patient.user.email, 
                 'dob': patient.date_of_birth, 
                 'gender': patient.gender,
-                'assigned doctor': patient.doctor.user.username,
+                'assigned_doctor': patient.doctor.user.username,
                 'height' : patient.height, 
                 'weight' : patient.weight, 
                 'bg' : patient.blood_group, 
-                # 'patient image' : patient.image.url if patient.image else None
+                #'patient_image': request.build_absolute_uri(patient.image.url) if patient.image else None
+                'patient_image' : patient.image_base64
             }        
     return JsonResponse(patient_details, status=200)
 
@@ -209,3 +213,26 @@ def get_exercise_list(request):
 
     # Return the list as a JsonResponse
     return JsonResponse(assignments_list, safe=False, status=200)
+
+@csrf_exempt 
+def update_patient_image(request):
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Not logged in'}, status=401)
+            
+        try:
+            # Parse the incoming JSON from React
+            data = json.loads(request.body)
+            base64_string = data.get('patient_image')
+
+            # Find the patient and update the field
+            patient = get_object_or_404(PatientProfile, user=request.user)
+            patient.image_base64 = base64_string
+            patient.save()
+
+            return JsonResponse({'success': 'Image updated successfully'}, status=200)
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+            
+    return JsonResponse({'error': 'Invalid method'}, status=405)
