@@ -267,3 +267,28 @@ def update_doctor_image(request):
             
     return JsonResponse({'error': 'Invalid method'}, status=405)
 
+
+def get_patient_status(request):
+    try:
+        curr_doc = DoctorProfile.objects.get(user = request.user)
+    except DoctorProfile.DoesNotExist:
+        return JsonResponse({'message':"Can't find the doctor!!!"})
+    else:
+        patients = PatientProfile.objects.filter(doctor=curr_doc)
+        patient_data_list = []
+        for patient in patients:        
+            patient_data = {}
+            patient_data['name']=patient.user.username
+            exe_list = []
+            assigned_exercises = AssignedExercise.objects.filter(patient=patient, assigned_by=curr_doc)
+            for assigned_exercise in assigned_exercises:
+                exe_list.append(
+                                {
+                                    'exercise_name':assigned_exercise.exercise.name, 
+                                    'reps': assigned_exercise.target_reps, 
+                                    'is_completed':assigned_exercise.is_completed
+                                }
+                                )
+            patient_data['assigned_exercises'] = exe_list
+            patient_data_list.append(patient_data)
+    return JsonResponse(patient_data_list, safe=False)
