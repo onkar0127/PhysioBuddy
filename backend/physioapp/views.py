@@ -7,7 +7,7 @@ from django.utils import timezone
 import base64
 from django.views.decorators.csrf import csrf_exempt
 
-
+# Common API
 def login_api(request):
     if request.method =='post':
         try:
@@ -99,29 +99,8 @@ def login_api(request):
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
-def patient_profile_api(request):
-    try:
-        patient = get_object_or_404(PatientProfile, user=request.user)
-    except Http404:
-        return JsonResponse({'error': 'Patient profile not found'}, status=404)
-    
 
-    patient_details = {
-                'patient_name': patient.user.username, 
-                'phone_number': patient.phone_number, 
-                'email': patient.user.email, 
-                'dob': patient.date_of_birth, 
-                'gender': patient.gender,
-                'assigned_doctor': patient.doctor.user.username,
-                'height' : patient.height, 
-                'weight' : patient.weight, 
-                'bg' : patient.blood_group, 
-                #'patient_image': request.build_absolute_uri(patient.image.url) if patient.image else None
-                'patient_image' : patient.image_base64
-            }        
-    return JsonResponse(patient_details, status=200)
-
-
+# APIs for Doctors
 def doctor_profile_api(request):
     if not request.user.is_authenticated:
         return JsonResponse(
@@ -155,7 +134,6 @@ def doctor_profile_api(request):
             {"error": "Doctor profile not found"},
             status=404
         )
-
 
 def get_patient_list(request):
     # Check if the user is doctor
@@ -192,6 +170,78 @@ def get_patient_list(request):
     # Return the list as a JsonResponse
     return JsonResponse(assignments_list, safe=False, status=200)
 
+@csrf_exempt 
+def update_doctor_image(request):
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Not logged in'}, status=401)
+            
+        try:
+            # Parse the incoming JSON from React
+            data = json.loads(request.body)
+            base64_string = data.get('doctor_image')
+
+            # Find the doctor and update the field
+            doctor = get_object_or_404(DoctorProfile, user=request.user)
+            doctor.image_base64 = base64_string
+            doctor.save()
+
+            return JsonResponse({'success': 'Image updated successfully'}, status=200)
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+            
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
+def get_patient_status(request):
+    try:
+        curr_doc = DoctorProfile.objects.get(user = request.user)
+    except DoctorProfile.DoesNotExist:
+        return JsonResponse({'message':"Can't find the doctor!!!"})
+    else:
+        patients = PatientProfile.objects.filter(doctor=curr_doc)
+        patient_data_list = []
+        for patient in patients:        
+            patient_data = {}
+            patient_data['name']=patient.user.username
+            exe_list = []
+            assigned_exercises = AssignedExercise.objects.filter(patient=patient, assigned_by=curr_doc)
+            for assigned_exercise in assigned_exercises:
+                exe_list.append(
+                                {
+                                    'exercise_name':assigned_exercise.exercise.name, 
+                                    'reps': assigned_exercise.target_reps, 
+                                    'is_completed':assigned_exercise.is_completed
+                                }
+                                )
+            patient_data['assigned_exercises'] = exe_list
+            patient_data_list.append(patient_data)
+    return JsonResponse(patient_data_list, safe=False)
+
+
+
+# APIs for Patients
+def patient_profile_api(request):
+    try:
+        patient = get_object_or_404(PatientProfile, user=request.user)
+    except Http404:
+        return JsonResponse({'error': 'Patient profile not found'}, status=404)
+    
+
+    patient_details = {
+                'patient_name': patient.user.username, 
+                'phone_number': patient.phone_number, 
+                'email': patient.user.email, 
+                'dob': patient.date_of_birth, 
+                'gender': patient.gender,
+                'assigned_doctor': patient.doctor.user.username,
+                'height' : patient.height, 
+                'weight' : patient.weight, 
+                'bg' : patient.blood_group, 
+                #'patient_image': request.build_absolute_uri(patient.image.url) if patient.image else None
+                'patient_image' : patient.image_base64
+            }        
+    return JsonResponse(patient_details, status=200)
 
 def get_exercise_list(request):
     # Check if the user is patient
@@ -244,51 +294,3 @@ def update_patient_image(request):
             
     return JsonResponse({'error': 'Invalid method'}, status=405)
 
-@csrf_exempt 
-def update_doctor_image(request):
-    if request.method == 'POST':
-        if not request.user.is_authenticated:
-            return JsonResponse({'error': 'Not logged in'}, status=401)
-            
-        try:
-            # Parse the incoming JSON from React
-            data = json.loads(request.body)
-            base64_string = data.get('doctor_image')
-
-            # Find the doctor and update the field
-            doctor = get_object_or_404(DoctorProfile, user=request.user)
-            doctor.image_base64 = base64_string
-            doctor.save()
-
-            return JsonResponse({'success': 'Image updated successfully'}, status=200)
-            
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON'}, status=400)
-            
-    return JsonResponse({'error': 'Invalid method'}, status=405)
-
-
-def get_patient_status(request):
-    try:
-        curr_doc = DoctorProfile.objects.get(user = request.user)
-    except DoctorProfile.DoesNotExist:
-        return JsonResponse({'message':"Can't find the doctor!!!"})
-    else:
-        patients = PatientProfile.objects.filter(doctor=curr_doc)
-        patient_data_list = []
-        for patient in patients:        
-            patient_data = {}
-            patient_data['name']=patient.user.username
-            exe_list = []
-            assigned_exercises = AssignedExercise.objects.filter(patient=patient, assigned_by=curr_doc)
-            for assigned_exercise in assigned_exercises:
-                exe_list.append(
-                                {
-                                    'exercise_name':assigned_exercise.exercise.name, 
-                                    'reps': assigned_exercise.target_reps, 
-                                    'is_completed':assigned_exercise.is_completed
-                                }
-                                )
-            patient_data['assigned_exercises'] = exe_list
-            patient_data_list.append(patient_data)
-    return JsonResponse(patient_data_list, safe=False)
