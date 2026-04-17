@@ -2,7 +2,7 @@ import json
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse, Http404
 from django.shortcuts import get_object_or_404
-from .models import PatientProfile, DoctorProfile, AssignedExercise
+from .models import PatientProfile, DoctorProfile, AssignedExercise,Exercise
 from django.utils import timezone
 import base64
 from django.views.decorators.csrf import csrf_exempt
@@ -218,6 +218,29 @@ def get_patient_status(request):
             patient_data_list.append(patient_data)
     return JsonResponse(patient_data_list, safe=False)
 
+def my_patients(request):
+    try:
+        curr_doc = DoctorProfile.objects.get(user = request.user)
+        
+    except DoctorProfile.DoesNotExist:
+        return JsonResponse({'message':"Can't find the doctor!!!"})
+    else:
+        patients = PatientProfile.objects.filter(doctor=curr_doc)
+        exercises = Exercise.objects.all()
+       
+        patient_data_list = []
+        for patient in patients:
+            patient_data_list.append(patient.user.username)
+        
+        exercise_list = []
+        for exercise in exercises:
+            exercise_list.append(exercise.name)
+
+        # Return combined response
+        return JsonResponse({
+            'patients': patient_data_list,
+            'exercises': exercise_list
+        })
 
 
 # APIs for Patients
