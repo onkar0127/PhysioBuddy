@@ -9,70 +9,6 @@ from django.views.decorators.csrf import csrf_exempt
 
 # Common API
 def login_api(request):
-    if request.method =='post':
-        try:
-            # Access request.body (a binary object)
-            data_bytes = request.body
-
-            # Decode it into a JSON string
-            json_string = data_bytes.decode('utf-8')
-
-            # Load the JSON string into a Python dictionary
-            data = json.loads(json_string)
-
-            # Get the data
-            username = data.get('username')
-            password = data.get('password')
-            #username = User2@1234
-            #password = Iam4050
-            # Authentication logic goes here...
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                # Login the user
-                login(request, user)
-
-                # Check the user type: doctor or patient
-                if user.is_staff:
-                    # User is a doctor
-                    return JsonResponse({'user': 'doctor'}, status=200)
-                else:
-                    # User is a patient
-                    return JsonResponse({'user': 'patient'}, status=200)
-            else:
-                return JsonResponse({'error': 'User doesn\'t exists123'}, status=404)
-
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON'}, status=400)
-    
-    #return JsonResponse({'error': 'Invalid request method'}, status=405)
-    
-    if request.method =='GET':
-        try:
-           
-            # Get the data
-            username = request.GET.get('username')
-            password = request.GET.get('password')
-            #username = User2@1234
-            #password = Iam4050
-            # Authentication logic goes here...
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                # Login the user
-                login(request, user)
-
-                # Check the user type: doctor or patient
-                if user.is_staff:
-                    # User is a doctor
-                    return JsonResponse({'user': 'doctor'}, status=200)
-                else:
-                    # User is a patient
-                    return JsonResponse({'user': 'patient'}, status=200)
-            else:
-                return JsonResponse({'error': 'User doesn\'t exists123'}, status=404)
-
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON'}, status=400)
-
     if request.method == 'GET':
             # Get the data
             username = request.GET.get('username')
@@ -241,6 +177,13 @@ def my_patients(request):
             'patients': patient_data_list,
             'exercises': exercise_list
         })
+
+def submit_assignment(request):
+    if request.method == 'post':
+        pass
+
+
+
 
 
 # APIs for Patients
