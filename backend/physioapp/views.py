@@ -4,8 +4,8 @@ from django.http import JsonResponse, Http404
 from django.shortcuts import get_object_or_404
 from .models import PatientProfile, DoctorProfile, AssignedExercise,Exercise
 from django.utils import timezone
-import base64
 from django.views.decorators.csrf import csrf_exempt
+from django.db import transaction
 
 # Common API
 def login_api(request):
@@ -179,8 +179,35 @@ def my_patients(request):
         })
 
 def submit_assignment(request):
-    if request.method == 'post':
-        pass
+    if request.method == 'GET':
+        doctor_name = request.GET.get('doctor')
+        patient_name = request.GET.get('patient')
+        exercise_name = request.GET.get('exercise')
+        rep_count = int(request.GET.get('reps'))
+
+        try:
+            with transaction.atomic():
+                # Creating respective objects
+                patient_obj = PatientProfile.objects.get(user__username=patient_name)
+                doctor_obj = DoctorProfile.objects.get(user__username=doctor_name)
+                exercise_obj = Exercise.objects.get(name=exercise_name)
+
+        except PatientProfile.DoesNotExist:
+            return JsonResponse({'error': 'Patient doesn\'t exists'}, status=404)
+        except Exercise.DoesNotExist:
+            return JsonResponse({'error': 'Excercise doesn\'t exists'}, status=404)
+        except DoctorProfile.DoesNotExist:
+            return JsonResponse({'error': 'Doctor doesn\'t exists'}, status=404)
+        
+        else:
+            # Creating AssignedExercise Object
+            assignment = AssignedExercise(patient=patient_obj, assigned_by=doctor_obj, exercise=exercise_obj, target_reps=rep_count)
+            assignment.save()
+            return JsonResponse({'message': 'Assignment created successfully'})
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
 
 
 
