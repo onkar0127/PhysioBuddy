@@ -186,11 +186,10 @@ def submit_assignment(request):
         rep_count = int(request.GET.get('reps'))
 
         try:
-            with transaction.atomic():
-                # Creating respective objects
-                patient_obj = PatientProfile.objects.get(user__username=patient_name)
-                doctor_obj = DoctorProfile.objects.get(user__username=doctor_name)
-                exercise_obj = Exercise.objects.get(name=exercise_name)
+            # Creating respective objects
+            patient_obj = PatientProfile.objects.get(user__username=patient_name)
+            doctor_obj = DoctorProfile.objects.get(user__username=doctor_name)
+            exercise_obj = Exercise.objects.get(name=exercise_name)
 
         except PatientProfile.DoesNotExist:
             return JsonResponse({'error': 'Patient doesn\'t exists'}, status=404)
