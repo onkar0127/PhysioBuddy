@@ -71,41 +71,6 @@ def doctor_profile_api(request):
             status=404
         )
 
-def get_patient_list(request):
-    # Check if the user is doctor
-    if not request.user.is_staff:
-        return JsonResponse({'error': 'Permission denied.'}, status=403)
-
-    # Identify the Doctor Profile
-    try:
-        doctor = get_object_or_404(DoctorProfile, user=request.user)
-    except Http404:
-        return JsonResponse({'error': 'Doctor profile not found.'}, status=404)
-
-    # Get today's date
-    #today = timezone.now().date()
-    
-    # Filter Assignments for today by the current doctor
-    assignments = AssignedExercise.objects.filter(
-        assigned_by=doctor,
-       # date_assigned__date=today
-    ).select_related('patient__user', 'exercise')
-
-    # Manually Serialize the QuerySet into a JSON-ready list
-    assignments_list = []
-    for assignment in assignments:
-        assignments_list.append({
-            'patient_username': assignment.patient.user.username,
-            'exercise_name': assignment.exercise.name,
-            'exercise_video_url': assignment.exercise.demo_video_url,
-            'target_reps': assignment.target_reps,
-            'is_completed': assignment.is_completed,
-            'date_assigned': assignment.date_assigned.isoformat() # Convert DateTimeField to string
-        })
-
-    # Return the list as a JsonResponse
-    return JsonResponse(assignments_list, safe=False, status=200)
-
 @csrf_exempt 
 def update_doctor_image(request):
     if request.method == 'POST':
