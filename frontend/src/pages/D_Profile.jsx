@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-// Single export function
 export default function P_DoctorProfile() {
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('theme') || 'dark';
@@ -9,16 +8,16 @@ export default function P_DoctorProfile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // State and ref for image upload
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Use useEffect to save the current theme to local storage whenever it changes
   useEffect(() => {
     localStorage.setItem('theme', theme);
+    const root = document.documentElement;
+    if (theme === 'dark') root.classList.add('dark');
+    else root.classList.remove('dark');
   }, [theme]);
 
-  // Fetch doctor data from backend
   useEffect(() => {
     const fetchDoctorData = async () => {
       try {
@@ -27,10 +26,7 @@ export default function P_DoctorProfile() {
           method: 'GET',
           credentials: 'include',
         }); 
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch doctor data');
-        }
+        if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
         setDoctor({
           name: data.doctor_name,
@@ -45,31 +41,24 @@ export default function P_DoctorProfile() {
           gender: data.gender || 'N/A', 
           hospital_name: data.hospital_name || 'N/A', 
         });
-        setError(null);
       } catch (err) {
-        setError("Could not load doctor profile. Please try again later.");
-        console.error("Fetch error:", err);
+        setError("Could not load doctor profile.");
       } finally {
         setLoading(false);
       }
     };
-
     fetchDoctorData();
   }, []);
 
-  // Handle file selection and Base64 conversion
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        uploadImage(reader.result); // Send Base64 to backend
-      };
+      reader.onloadend = () => uploadImage(reader.result);
       reader.readAsDataURL(file);
     }
   };
 
-  // Send Base64 string to Django
   const uploadImage = async (base64String) => {
     setIsUploading(true);
     try {
@@ -79,234 +68,134 @@ export default function P_DoctorProfile() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ doctor_image: base64String }),
       });
-
       if (!response.ok) throw new Error('Failed to save image');
-
-      // Update local state to reflect the new image immediately
       setDoctor((prev) => ({ ...prev, doctor_image: base64String }));
-      
     } catch (err) {
-      console.error("Image upload failed:", err);
-      alert("Failed to upload image. Please try again.");
+      alert("Failed to upload image.");
     } finally {
       setIsUploading(false);
     }
   };
 
-  const triggerFileInput = () => {
-    fileInputRef.current.click();
-  };
+  const triggerFileInput = () => fileInputRef.current.click();
+  const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
 
-  // Function to toggle between light and dark themes
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
-  };
-
-  // Base classes for the main container, changing based on the theme
-  const mainContainerClasses = `min-h-screen flex flex-col ${theme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-gray-100 text-gray-800'}`;
-  const cardClasses = `shadow-lg rounded-xl p-6 ${theme === 'dark' ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-800'}`;
-  const listItemClasses = `p-4 rounded-lg flex justify-between items-center ${theme === 'dark' ? 'bg-gray-700 text-gray-200' : 'bg-indigo-50 text-gray-800'}`;
-
-  // Loading Screen
-  if (loading) {
-    return (
-      <div className={mainContainerClasses}>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-        <style>{`body { font-family: 'Inter', sans-serif; }`}</style>
-        <div className="flex items-center justify-center h-screen">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-            <p className="mt-4">Loading doctor profile...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Error Screen
-  if (error) {
-    return (
-      <div className={`min-h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-gray-900 text-red-400' : 'bg-white text-red-600'}`}>
-        <p className="text-xl font-semibold">{error}</p>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="h-screen w-full flex items-center justify-center bg-cyan-50 dark:bg-gray-900">
+      <div className="animate-spin h-10 w-10 border-4 border-cyan-600 border-t-transparent rounded-full"></div>
+    </div>
+  );
 
   return (
-    <>
-      {/* Tailwind CSS CDN */}
-      <script src="https://cdn.tailwindcss.com"></script>
-      <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-      <style>{`body { font-family: 'Inter', sans-serif; }`}</style>
-
-      <div className={mainContainerClasses}>
-
-        {/* --- Navbar Section --- */}
-        <nav className={`shadow-sm p-4 sticky top-0 z-50 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
-          <div className="container mx-auto flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-              <img src="src/assets/pb.png" alt="Logo" className="h-14 w-18 text-indigo-600" />
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <div className="hidden sm:block">
-                <a href="/home" className={`font-medium transition-colors duration-200 ${theme === 'dark' ? 'text-gray-300 hover:text-indigo-400' : 'text-gray-600 hover:text-indigo-600'}`}>Home</a>
-              </div>
-
-              <button
-                onClick={toggleTheme}
-                className={`p-2 rounded-full transition-colors duration-200 ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'}`}
-              >
-                {theme === 'light' ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                )}
-              </button>
-            </div>
+    <div className="h-screen w-full font-[Inter] bg-gradient-to-r from-cyan-100 via-cyan-200 to-blue-100 dark:from-gray-950 dark:via-gray-900 dark:to-slate-900 transition-colors duration-500 overflow-hidden flex flex-col">
+      
+      {/* Navbar - Fixed height */}
+      <nav className="flex-none backdrop-blur-xl bg-white/40 dark:bg-gray-900/60 border-b border-white/30 dark:border-gray-800 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 h-20 flex justify-between items-center">
+          <img src="src/assets/pb.png" alt="Logo" className="h-12 w-auto" />
+          <div className="flex items-center gap-6">
+            <a href="/home" className="text-sm font-bold text-cyan-900 dark:text-cyan-400 hover:text-cyan-600 transition">Home</a>
+            <button onClick={toggleTheme} className="p-2 rounded-full bg-white/50 dark:bg-gray-800 text-cyan-800 dark:text-yellow-400 shadow-inner">
+              {theme === 'light' ? "🌙" : "☀️"}
+            </button>
           </div>
-        </nav>
+        </div>
+      </nav>
 
-        {/* --- Main Content Area --- */}
-        <main className="container mx-auto flex-1 p-4 md:p-8 overflow-y-auto">
-          <div className="flex flex-col md:flex-row gap-8">
+      {/* Main Container - No internal scrolling, symmetrical height */}
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 overflow-hidden">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch h-full">
 
-            {/* --- Left Sidebar (Doctor Details) --- */}
-            <div className={`md:w-1/4 w-full h-50 sticky top-0 ${cardClasses}`}>
-              <div className="flex flex-col items-center">
-                
-                {/* Doctor Image Circle */}
-                <div className={`w-32 h-32 rounded-full overflow-hidden mb-2 border-4 shadow-md ${theme === 'dark' ? 'border-indigo-600' : 'border-indigo-200'}`}>
-                  <img src={doctor?.doctor_image || "https://placehold.co/128x128/4F46E5/ffffff?text=Doctor"} alt="Doctor" className="w-full h-full object-cover" />
-                </div>
-
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  ref={fileInputRef} 
-                  onChange={handleImageChange} 
-                  className="hidden" 
+          {/* Left Sidebar - Height matches Right Content */}
+          <aside className="lg:col-span-4 h-full">
+            <div className="h-full backdrop-blur-2xl bg-white/40 dark:bg-gray-800/40 border border-white/50 dark:border-gray-700 rounded-3xl shadow-2xl p-8 text-center flex flex-col justify-center">
+              
+              <div className="relative inline-block mx-auto group mb-4">
+                <img
+                  src={doctor?.doctor_image || "https://placehold.co/150/0891b2/ffffff?text=Doctor"}
+                  alt="Doctor"
+                  className="w-32 h-32 rounded-full object-cover border-4 border-white dark:border-cyan-600 shadow-xl"
                 />
                 <button 
                   onClick={triggerFileInput} 
                   disabled={isUploading}
-                  className={`mb-4 text-sm font-medium transition duration-200 ${isUploading ? 'text-gray-500 cursor-not-allowed' : 'text-indigo-500 hover:text-indigo-400'}`}
+                  className="absolute bottom-0 right-0 bg-cyan-600 text-white p-2 rounded-full shadow-lg hover:bg-cyan-700 transition transform hover:scale-110 active:scale-95 border-2 border-white dark:border-gray-800"
                 >
-                  {isUploading ? 'Uploading...' : 'Change Photo'}
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
                 </button>
-
-                <h2 className={`text-2xl font-semibold text-center my-4 ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>
-                  Dr. {doctor?.name || 'Name'}
-                </h2>
-
-                <div className="w-full space-y-4">
-                  {/* City */}
-                  <div className={listItemClasses}>
-                    <div className="flex flex-col w-full">
-                      <span className="text-sm font-medium">City:</span>
-                      <span className="font-semibold break-words">{doctor?.city || 'N/A'}</span>
-                    </div>
+              </div>
+              <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} className="hidden" />
+              
+              <h2 className="text-2xl font-black text-cyan-950 dark:text-cyan-400 tracking-tight mb-6">
+                Dr. {doctor?.name || 'Doctor Name'}
+              </h2>
+              
+              <div className="space-y-3 text-left">
+                {[
+                  { label: 'Email', value: doctor?.email },
+                  { label: 'Phone', value: doctor?.phone_number },
+                  { label: 'Gender', value: doctor?.gender },
+                  { label: 'City', value: doctor?.city }
+                ].map((item, idx) => (
+                  <div key={idx} className="p-3 bg-white/30 dark:bg-gray-900/30 rounded-xl border border-white/20">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-cyan-700 dark:text-cyan-500">{item.label}</p>
+                    <p className="text-sm font-semibold text-cyan-950 dark:text-gray-200 truncate">{item.value || 'N/A'}</p>
                   </div>
-
-                  {/* Email */}
-                  <div className={listItemClasses}>
-                    <div className="flex flex-col w-full">
-                      <span className="text-sm font-medium">Email:</span>
-                      <span className="font-semibold break-words">{doctor?.email || 'N/A'}</span>
-                    </div>
-                  </div>
-
-                  {/* Phone */}
-                  <div className={listItemClasses}>
-                    <div className="flex flex-col w-full">
-                      <span className="text-sm font-medium">Phone:</span>
-                      <span className="font-semibold">{doctor?.phone_number || 'N/A'}</span>
-                    </div>
-                  </div>
-
-                  {/* Gender */}
-                  <div className={listItemClasses}>
-                    <div className="flex flex-col w-full">
-                      <span className="text-sm font-medium">Gender:</span>
-                      <span className="font-semibold">{doctor?.gender || 'N/A'}</span>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
+          </aside>
 
-            {/* --- Right Content Area (Scrollable) --- */}
-            <div className={`flex-1 ${cardClasses} max-h-fit  sticky top-32 `}>
-              <h1 className="text-3xl font-bold mb-6">Doctor Profile</h1>
-              <div className={`p-6 rounded-lg border mb-6 ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-100 border-gray-200'}`}>
-                <h3 className="font-semibold text-lg mb-2">Professional Bio</h3>
-                <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
-                  {doctor?.bio || 'Dedicated healthcare professional with extensive experience in patient care and treatment.'}
-                </p>
+          {/* Right Content - Perfectly Symmetrical with Left aside */}
+          <section className="lg:col-span-8 h-full">
+            <div className="h-full backdrop-blur-2xl bg-white/40 dark:bg-gray-800/40 border border-white/50 dark:border-gray-700 rounded-3xl shadow-2xl p-6 sm:p-10 flex flex-col">
+              <h1 className="text-3xl font-black text-cyan-950 dark:text-cyan-400 mb-6 tracking-tight">Doctor Profile</h1>
+
+              <div className="bg-cyan-600 dark:bg-cyan-900/80 rounded-2xl p-5 text-white flex items-center gap-6 shadow-xl shadow-cyan-600/20 mb-6">
+                <div className="p-4 bg-white/20 rounded-full text-2xl">🏢</div>
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-widest opacity-80">Hospital Name</p>
+                  <p className="text-2xl font-black truncate max-w-md">{doctor?.hospital_name || 'N/A'}</p>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className={`p-6 rounded-lg border ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-blue-50 border-blue-200'}`}>
-                  <div className="flex items-center space-x-3 mb-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <h3 className="font-semibold text-lg">Specialization</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                {[
+                  { label: 'Specialization', value: doctor?.specialization, color: 'text-blue-600' },
+                  { label: 'Qualification', value: doctor?.qualification, color: 'text-cyan-600' },
+                  { label: 'Experience', value: doctor?.experience, color: 'text-purple-600' }
+                ].map((m, i) => (
+                  <div key={i} className="p-4 bg-white/50 dark:bg-gray-700/40 rounded-xl border border-white/60 dark:border-gray-600 shadow-sm text-center">
+                    <p className="text-[10px] font-black uppercase text-cyan-800 dark:text-cyan-500 tracking-wider mb-1">{m.label}</p>
+                    <p className={`text-lg font-black ${m.color} dark:text-gray-100 truncate`}>{m.value || 'N/A'}</p>
                   </div>
-                  <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{doctor?.specialization || 'N/A'}</p>
-                </div>
+                ))}
+              </div>
 
-                <div className={`p-6 rounded-lg border ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-green-50 border-green-200'}`}>
-                  <div className="flex items-center space-x-3 mb-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
-                    <h3 className="font-semibold text-lg">Qualification</h3>
-                  </div>
-                  <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{doctor?.qualification || 'N/A'}</p>
-                </div>
-
-                <div className={`p-6 rounded-lg border ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-purple-50 border-purple-200'}`}>
-                  <div className="flex items-center space-x-3 mb-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <h3 className="font-semibold text-lg">Experience</h3>
-                  </div>
-                  <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{doctor?.experience || 'N/A'}</p>
-                </div>
-
-                {/* --- NEW: Hospital Name Card --- */}
-                <div className={`p-6 rounded-lg border ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-orange-50 border-orange-200'}`}>
-                  <div className="flex items-center space-x-3 mb-2">
-                    {/* Swapped the envelope icon for a building icon */}
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1v1H9V7zm5 0h1v1h-1V7zm-5 4h1v1H9v-1zm5 0h1v1h-1v-1zm-5 4h1v1H9v-1zm5 0h1v1h-1v-1z" />
-                    </svg>
-                    <h3 className="font-semibold text-lg">Hospital Name</h3>
-                  </div>
-                  <p className={`text-sm break-words font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                    {doctor?.hospital_name || 'N/A'}
+              <div className="border-t border-white/40 dark:border-gray-700 pt-6 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-cyan-950 dark:text-cyan-400 mb-3 tracking-tight uppercase tracking-widest text-sm">
+                    Professional Summary
+                  </h3>
+                  <p className="text-sm text-cyan-900 dark:text-gray-200 leading-relaxed font-semibold opacity-90">
+                    Dedicated healthcare professional with extensive experience in providing comprehensive medical services and high-quality patient care. Committed to medical excellence and innovation, ensuring a focus on rehabilitation milestones and the highest standards of clinical practice.
                   </p>
                 </div>
-                {/* --------------------------------- */}
 
-              </div>
-
-              <div className={`p-6 rounded-lg border col-span-1 md:col-span-2 ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-100 border-gray-200'}`}>
-                <h3 className="font-semibold text-lg mb-3">Additional Information</h3>
-                <div className={`space-y-3 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
-                  <div>
-                    <p className="text-sm font-medium mb-1">Professional Summary:</p>
-                    <p className="text-sm">Experienced healthcare professional dedicated to providing comprehensive medical services and patient care with a focus on excellence and innovation.</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium mb-1">Availability:</p>
-                    <p className="text-sm">Available for consultations Monday through Friday, 9:00 AM to 5:00 PM. Emergency consultations available upon request.</p>
-                  </div>
+                <div className="p-4 bg-cyan-600/10 dark:bg-cyan-400/5 border-l-4 border-cyan-600 rounded-r-xl mt-4">
+                  <p className="text-xs font-bold text-cyan-700 dark:text-cyan-400 italic">
+                    Availability: Available for consultations Monday through Friday, 9:00 AM to 5:00 PM.
+                  </p>
                 </div>
               </div>
             </div>
+          </section>
 
-          </div>
-        </main>
-
-      </div>
-    </>
+        </div>
+      </main>
+    </div>
   );
 }
