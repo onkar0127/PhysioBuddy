@@ -170,7 +170,7 @@ export default function Landingpage() {
                         </p>
                         <div className="mt-12 flex justify-center space-x-4">
                             <button
-                                onClick={() => handleNavigation('/')}
+                                onClick={() => handleNavigation('/login')}
                                 className="px-8 py-3 text-lg sm:px-10 sm:py-4 sm:text-xl font-bold rounded-full text-white bg-cyan-600 shadow-2xl shadow-cyan-500/60 hover:bg-cyan-700 transition transform hover:scale-[1.05] duration-300 focus:outline-none focus:ring-4 focus:ring-cyan-300 focus:ring-offset-2"
                             >
                                 Start Your Recovery Journey
