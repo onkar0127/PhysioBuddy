@@ -22,7 +22,7 @@ function App() {
         <Route path="/patient-home" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/doctor-profile" element={<D_Profile />} />
-        <Route path="/patient-profile" element={<P_Profile />} />
+          <Route path="/patient-profile" element={<P_Profile />} />
         <Route path="/assign-exercise" element={<AssignExercise />} />
         <Route path='/live' element={<WebStream />}/>
         <Route path='/exercise-list' element={<ExerciseList/>}/>

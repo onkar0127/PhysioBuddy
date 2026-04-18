@@ -83,7 +83,7 @@ def get_patient_list(request):
         return JsonResponse({'error': 'Doctor profile not found.'}, status=404)
 
     # Get today's date
-    today = timezone.now().date()
+    #today = timezone.now().date()
     
     # Filter Assignments for today by the current doctor
     assignments = AssignedExercise.objects.filter(
