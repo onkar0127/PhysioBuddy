@@ -5,7 +5,6 @@ from django.shortcuts import get_object_or_404
 from .models import PatientProfile, DoctorProfile, AssignedExercise,Exercise
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from django.db import transaction
 
 # Common API
 def login_api(request):
