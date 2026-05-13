@@ -1,193 +1,184 @@
-import React, { useState, useEffect, useRef } from 'react'; // Added useRef
+import React, { useState, useEffect, useRef } from 'react';
+import pb from "../assets/pb.png";
 
-export default function P_Profile() {
+export default function P_PatientProfile() {
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('theme') || 'dark';
   });
-
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isUploading, setIsUploading] = useState(false); // New state for upload status
-
-  const fileInputRef = useRef(null); // Reference to the hidden file input
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     localStorage.setItem('theme', theme);
+    const root = document.documentElement;
+    if (theme === 'dark') root.classList.add('dark');
+    else root.classList.remove('dark');
   }, [theme]);
 
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
-  };
-
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchPatientData = async () => {
       try {
+        setLoading(true);
         const response = await fetch('http://127.0.0.1:8000/api/patient/profile/', {
           method: 'GET',
-          credentials: 'include', 
-          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
         });
-
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
+        if (!response.ok) throw new Error('Failed to fetch data');
         const data = await response.json();
-        setPatient(data);
+        setPatient({
+          name: data.patient_name,
+          phone_number: data.phone_number,
+          email: data.email,
+          dob: data.dob,
+          gender: data.gender,
+          assigned_doctor: data.assigned_doctor,
+          height: data.height,
+          weight: data.weight,
+          blood_group: data.bg,
+          patient_image: data.patient_image || null,
+        });
       } catch (err) {
-        console.error("Failed to fetch patient data:", err);
-        setError("Could not load profile data.");
+        setError("Could not load patient profile.");
       } finally {
         setLoading(false);
       }
     };
-
-    fetchProfile();
+    fetchPatientData();
   }, []);
 
-  // --- NEW: Handle file selection and Base64 conversion ---
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      
-      // When the file is done reading, this runs
-      reader.onloadend = () => {
-        const base64String = reader.result; 
-        uploadImage(base64String); // Send to backend
-      };
-      
-      // Tell the reader to convert the file to a Base64 Data URL
-      reader.readAsDataURL(file);
+  const triggerFileInput = () => fileInputRef.current.click();
+  const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
+
+  const calculateBMI = () => {
+    if (patient?.height && patient?.weight) {
+      const heightInMeters = patient.height / 100;
+      return (patient.weight / (heightInMeters * heightInMeters)).toFixed(1);
     }
+    return null;
   };
 
-  // --- NEW: Send Base64 string to Django ---
-  const uploadImage = async (base64String) => {
-    setIsUploading(true);
-    try {
-      const response = await fetch('http://127.0.0.1:8000/api/patient/update-image/', {
-        method: 'POST', // Using POST to send data
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ patient_image: base64String }),
-      });
+  const bmi = calculateBMI();
 
-      if (!response.ok) throw new Error('Failed to save image');
-
-      // Update the local state so the image changes instantly on screen!
-      setPatient((prev) => ({ ...prev, patient_image: base64String }));
-      
-    } catch (err) {
-      console.error("Image upload failed:", err);
-      alert("Failed to upload image. Please try again.");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current.click(); // Programmatically click the hidden input
-  };
-
-  // Base classes
-  const mainContainerClasses = `min-h-screen flex flex-col ${theme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-gray-100 text-gray-800'}`;
-  const cardClasses = `shadow-lg rounded-xl p-6 ${theme === 'dark' ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-800'}`;
-  const listItemClasses = `p-4 rounded-lg flex justify-between items-center ${theme === 'dark' ? 'bg-gray-700 text-gray-200' : 'bg-indigo-50 text-gray-800'}`;
-
-  if (loading) return <div className={`min-h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}><p className="text-xl font-semibold">Loading profile...</p></div>;
-  if (error) return <div className={`min-h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-gray-900 text-red-400' : 'bg-white text-red-600'}`}><p className="text-xl font-semibold">{error}</p></div>;
+  if (loading) return (
+    <div className="h-screen w-full flex items-center justify-center bg-cyan-50 dark:bg-gray-900">
+      <div className="animate-spin h-10 w-10 border-4 border-cyan-600 border-t-transparent rounded-full"></div>
+    </div>
+  );
 
   return (
-    <>
-      <div className={mainContainerClasses}>
-        {/* Navbar Section */}
-        <nav className={`shadow-sm p-4 sticky top-0 z-50 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
-           {/* ... Navbar content stays exactly the same ... */}
-           <div className="container mx-auto flex justify-between items-center">
-             <div className="flex items-center space-x-2">
-               <img src="src/assets/pb.png" alt="Logo" className="h-14 w-18 text-indigo-600" />
-             </div>
-             <div className="flex items-center space-x-4">
-               <div className="hidden sm:block"><a href="/patient-home" className={`font-medium transition-colors duration-200 ${theme === 'dark' ? 'text-gray-300 hover:text-indigo-400' : 'text-gray-600 hover:text-indigo-600'}`}>Home</a></div>
-               <button onClick={toggleTheme} className={`p-2 rounded-full transition-colors duration-200 ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'}`}>
-                 {theme === 'light' ? (
-                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-                 ) : (
-                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                 )}
-               </button>
-             </div>
-           </div>
-        </nav>
+    <div className="h-screen w-full font-[Inter] bg-gradient-to-r from-cyan-100 via-cyan-200 to-blue-100 dark:from-gray-950 dark:via-gray-900 dark:to-slate-900 transition-colors duration-500 overflow-hidden flex flex-col">
+      
+      {/* Navbar */}
+      <nav className="flex-none backdrop-blur-xl bg-white/40 dark:bg-gray-900/60 border-b border-white/30 dark:border-gray-800 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 h-20 flex justify-between items-center">
+          <img src={pb} alt="Logo" className="h-12 w-auto" />
+          <div className="flex items-center gap-6">
+            <a href="/home" className="text-sm font-bold text-cyan-900 dark:text-cyan-400 hover:text-cyan-600 transition">Home</a>
+            <button onClick={toggleTheme} className="p-2 rounded-full bg-white/50 dark:bg-gray-800 text-cyan-800 dark:text-yellow-400 shadow-inner">
+              {theme === 'light' ? "🌙" : "☀️"}
+            </button>
+          </div>
+        </div>
+      </nav>
 
-        <main className="container mx-auto flex-1 p-4 md:p-8">
-          <div className="flex flex-col md:flex-row gap-8">
+      <main className="flex-1 overflow-hidden px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch h-full">
 
-            {/* --- Left Sidebar (Patient Details) --- */}
-            <div className={`md:w-1/4 w-full h-fit ${cardClasses}`}>
-              <div className="flex flex-col items-center">
-                
-                <div className={`w-32 h-32 rounded-full overflow-hidden mb-2 border-4 shadow-md ${theme === 'dark' ? 'border-indigo-600' : 'border-indigo-200'}`}>
-                  <img src={patient?.patient_image || "https://placehold.co/128x128/999999/ffffff?text=Patient"} alt="Patient" className="w-full h-full object-cover" />
-                </div>
-
-                {/* --- NEW: Hidden file input and visible button --- */}
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  ref={fileInputRef} 
-                  onChange={handleImageChange} 
-                  className="hidden" 
+          {/* Left Sidebar */}
+          <aside className="lg:col-span-4 h-full">
+            <div className="h-full backdrop-blur-2xl bg-white/40 dark:bg-gray-800/40 border border-white/50 dark:border-gray-700 rounded-3xl shadow-2xl p-8 text-center flex flex-col justify-center">
+              
+              {/* FIXED: Camera Icon Positioning container */}
+              <div className="relative inline-block mx-auto group">
+                <img
+                  src={patient?.patient_image || "https://placehold.co/150/0891b2/ffffff?text=Patient"}
+                  alt="Patient"
+                  className="w-32 h-32 rounded-full object-cover border-4 border-white dark:border-cyan-600 shadow-xl"
                 />
                 <button 
                   onClick={triggerFileInput} 
-                  disabled={isUploading}
-                  className={`mb-4 text-sm font-medium transition duration-200 ${isUploading ? 'text-gray-500 cursor-not-allowed' : 'text-indigo-500 hover:text-indigo-400'}`}
+                  className="absolute bottom-0 right-0 bg-cyan-600 text-white p-2 rounded-full shadow-lg hover:bg-cyan-700 transition transform hover:scale-110 active:scale-95 border-2 border-white dark:border-gray-800"
                 >
-                  {isUploading ? 'Uploading...' : 'Change Photo'}
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
                 </button>
-                {/* ------------------------------------------------ */}
-
-                <h2 className={`text-2xl font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>
-                  {patient?.patient_name || 'N/A'}
-                </h2>
-                <p className={`text-sm mb-6 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Email: {patient?.email || 'N/A'}
-                </p>
-
-                <div className="w-full space-y-4">
-                  <div className={listItemClasses}><span className="text-sm font-medium">DOB:</span><span className="font-bold">{patient?.dob || 'N/A'}</span></div>
-                  <div className={listItemClasses}><span className="text-sm font-medium">Gender:</span><span className="font-bold">{patient?.gender || 'N/A'}</span></div>
-                  <div className={listItemClasses}><span className="text-sm font-medium">Blood Group:</span><span className="font-bold text-right">{patient?.bg || 'N/A'}</span></div>
-                  <div className={listItemClasses}><span className="text-sm font-medium">Doctor:</span><span className="font-bold text-right">Dr. {patient?.assigned_doctor || 'N/A'}</span></div>
-                </div>
               </div>
-            </div>
-
-            {/* --- Right Content Area --- */}
-            <div className={`flex-1 ${cardClasses}`}>
-              <h1 className="text-2xl font-bold mb-4">Patient Dashboard</h1>
-              <p className={`mb-6 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>This section can be used to display charts, reports, upcoming appointments, and other relevant information for the patient.</p>
+              <input type="file" ref={fileInputRef} className="hidden" />
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className={`p-6 rounded-lg border ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-100 border-gray-200'}`}>
-                  <h3 className="font-semibold text-lg mb-2">Physical Stats</h3>
-                  <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Height: {patient?.height || '-'} <br/>Weight: {patient?.weight || '-'}</p>
+              <h2 className="mt-6 text-2xl font-black text-cyan-950 dark:text-cyan-400 tracking-tight">{patient?.name || 'Patient Name'}</h2>
+              
+              <div className="mt-8 space-y-4 text-left">
+                {[
+                  { label: 'Email', value: patient?.email },
+                  { label: 'Phone', value: patient?.phone_number },
+                  { label: 'Gender', value: patient?.gender },
+                  { label: 'DOB', value: patient?.dob }
+                ].map((item, idx) => (
+                  <div key={idx} className="p-3 bg-white/30 dark:bg-gray-900/30 rounded-xl border border-white/20">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-cyan-700 dark:text-cyan-500">{item.label}</p>
+                    <p className="text-sm font-semibold text-cyan-950 dark:text-gray-200 truncate">{item.value || 'N/A'}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </aside>
+
+          {/* Right Content */}
+          <section className="lg:col-span-8 h-full">
+            <div className="h-full backdrop-blur-2xl bg-white/40 dark:bg-gray-800/40 border border-white/50 dark:border-gray-700 rounded-3xl shadow-2xl p-6 sm:p-10 flex flex-col justify-start">
+              <h1 className="text-3xl font-black text-cyan-950 dark:text-cyan-400 mb-8 tracking-tight">Patient Profile</h1>
+
+              <div className="bg-cyan-600 dark:bg-cyan-900/80 rounded-2xl p-6 text-white flex items-center gap-6 shadow-xl shadow-cyan-600/20 mb-8">
+                <div className="p-4 bg-white/20 rounded-full text-2xl">🩺</div>
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-widest opacity-80">Assigned Doctor</p>
+                  <p className="text-2xl font-black">Dr. {patient?.assigned_doctor || 'N/A'}</p>
                 </div>
-                <div className={`p-6 rounded-lg border ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-100 border-gray-200'}`}>
-                  <h3 className="font-semibold text-lg mb-2">Contact Info</h3>
-                  <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Phone: {patient?.phone_number || '-'}</p>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+                {[
+                  { label: 'Height', value: `${patient?.height} cm`, color: 'text-blue-600' },
+                  { label: 'Weight', value: `${patient?.weight} kg`, color: 'text-cyan-600' },
+                  { label: 'Blood Group', value: patient?.blood_group, color: 'text-rose-600' },
+                  { label: 'BMI Score', value: bmi || 'N/A', color: 'text-purple-600' }
+                ].map((m, i) => (
+                  <div key={i} className="p-4 bg-white/50 dark:bg-gray-700/40 rounded-xl border border-white/60 dark:border-gray-600 shadow-sm text-center">
+                    <p className="text-[10px] font-black uppercase text-cyan-800 dark:text-cyan-500 tracking-wider mb-1">{m.label}</p>
+                    <p className={`text-xl font-black ${m.color} dark:text-gray-100`}>{m.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t border-white/40 dark:border-gray-700 pt-8 flex-grow">
+                <h3 className="text-xl font-bold text-cyan-950 dark:text-cyan-400 mb-4 tracking-tight uppercase tracking-widest text-sm">
+                  Additional Information
+                </h3>
+                
+                <div className="space-y-6">
+                  <div>
+                    <p className="text-sm text-cyan-900 dark:text-gray-200 leading-relaxed font-semibold opacity-90">
+                      Comprehensive health profile maintained for accurate medical record keeping and continuity of care. This summary reflects progress and highlights areas of focus for rehabilitation.
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-cyan-600/10 dark:bg-cyan-400/5 border-l-4 border-cyan-600 rounded-r-xl">
+                    <p className="text-xs font-bold text-cyan-700 dark:text-cyan-400 italic">
+                      Note: Your recovery milestones are updated regularly by your specialist to ensure the highest standard of care.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
+          </section>
 
-          </div>
-        </main>
-
-        <footer className={`text-center p-4 mt-8 shadow-sm ${theme === 'dark' ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-500'}`}>
-          &copy; Your Physio Trainer is here!! 
-        </footer>
-      </div>
-    </>
+        </div>
+      </main>
+    </div>
   );
 }
