@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import pb from "../assets/pb.png"; // Import the logo image
+
+const API_BASE = 'http://127.0.0.1:8000';
 
 export default function P_DoctorProfile() {
   const [theme, setTheme] = useState(() => {
@@ -11,6 +14,9 @@ export default function P_DoctorProfile() {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Logic to detect which page we are on for the underline
+  const currentPath = window.location.pathname;
+
   useEffect(() => {
     localStorage.setItem('theme', theme);
     const root = document.documentElement;
@@ -22,7 +28,7 @@ export default function P_DoctorProfile() {
     const fetchDoctorData = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://127.0.0.1:8000/api/doctor/profile/', {
+        const response = await fetch(`${API_BASE}/api/doctor/profile/`, {
           method: 'GET',
           credentials: 'include',
         }); 
@@ -35,7 +41,7 @@ export default function P_DoctorProfile() {
           specialization: data.specialization,
           qualification: data.qualification,
           experience: data.experience_years || 'Not specified',
-          bio: data.bio || 'Dedicated healthcare professional',
+          professional_summary: data.professional_summary || 'Dedicated healthcare professional',
           doctor_image: data.doctor_image || null,
           city: data.city || 'N/A',
           gender: data.gender || 'N/A', 
@@ -62,7 +68,7 @@ export default function P_DoctorProfile() {
   const uploadImage = async (base64String) => {
     setIsUploading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/doctor/update-image/', {
+      const response = await fetch(`${API_BASE}/api/doctor/update-image/`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -80,6 +86,13 @@ export default function P_DoctorProfile() {
   const triggerFileInput = () => fileInputRef.current.click();
   const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
 
+  const navLinks = [
+    { name: 'Home', href: '/doctor-home' },
+    { name: 'Patient Status', href: '/patient-status' },
+    { name: 'New Assignment', href: '/new-assignment' },
+    { name: 'Doctor Profile', href: '/doctor-profile' },
+  ];
+
   if (loading) return (
     <div className="h-screen w-full flex items-center justify-center bg-cyan-50 dark:bg-gray-900">
       <div className="animate-spin h-10 w-10 border-4 border-cyan-600 border-t-transparent rounded-full"></div>
@@ -89,24 +102,49 @@ export default function P_DoctorProfile() {
   return (
     <div className="h-screen w-full font-[Inter] bg-gradient-to-r from-cyan-100 via-cyan-200 to-blue-100 dark:from-gray-950 dark:via-gray-900 dark:to-slate-900 transition-colors duration-500 overflow-hidden flex flex-col">
       
-      {/* Navbar - Fixed height */}
-      <nav className="flex-none backdrop-blur-xl bg-white/40 dark:bg-gray-900/60 border-b border-white/30 dark:border-gray-800 shadow-sm">
+      {/* ── Updated Navbar: Logo Image only, Text removed ── */}
+      <nav className="flex-none backdrop-blur-xl bg-white/40 dark:bg-gray-900/60 border-b border-white/30 dark:border-gray-800 shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-20 flex justify-between items-center">
-          <img src="src/assets/pb.png" alt="Logo" className="h-12 w-auto" />
-          <div className="flex items-center gap-6">
-            <a href="/home" className="text-sm font-bold text-cyan-900 dark:text-cyan-400 hover:text-cyan-600 transition">Home</a>
-            <button onClick={toggleTheme} className="p-2 rounded-full bg-white/50 dark:bg-gray-800 text-cyan-800 dark:text-yellow-400 shadow-inner">
+          <div className="flex items-center">
+            <a href="/doctor-home">
+              <img 
+                src={pb} 
+                alt="PhysioBuddy Logo" 
+                className="h-14 w-auto object-contain hover:scale-105 transition-transform duration-300" 
+              />
+            </a>
+          </div>
+          
+          <div className="hidden md:flex items-center gap-10">
+            {navLinks.map((link) => {
+              const isActive = currentPath === link.href;
+              return (
+                <a 
+                  key={link.name} 
+                  href={link.href} 
+                  className={`text-xl font-bold tracking-tight transition-all duration-300 hover:scale-105 ${
+                    isActive 
+                      ? 'text-cyan-600 underline underline-offset-[12px] decoration-3' 
+                      : 'text-cyan-900 dark:text-gray-300 hover:text-cyan-600'
+                  }`}
+                >
+                  {link.name}
+                </a>
+              );
+            })}
+            
+            <button onClick={toggleTheme} className="p-2.5 rounded-full bg-white/50 dark:bg-gray-800 text-cyan-800 dark:text-yellow-400 border border-white/30 dark:border-gray-700 transition-all hover:bg-white dark:hover:bg-gray-700 shadow-sm">
               {theme === 'light' ? "🌙" : "☀️"}
             </button>
           </div>
         </div>
       </nav>
 
-      {/* Main Container - No internal scrolling, symmetrical height */}
+      {/* ── Main Content ── */}
       <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 overflow-hidden">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch h-full">
 
-          {/* Left Sidebar - Height matches Right Content */}
+          {/* Left Sidebar */}
           <aside className="lg:col-span-4 h-full">
             <div className="h-full backdrop-blur-2xl bg-white/40 dark:bg-gray-800/40 border border-white/50 dark:border-gray-700 rounded-3xl shadow-2xl p-8 text-center flex flex-col justify-center">
               
@@ -149,7 +187,7 @@ export default function P_DoctorProfile() {
             </div>
           </aside>
 
-          {/* Right Content - Perfectly Symmetrical with Left aside */}
+          {/* Right Content */}
           <section className="lg:col-span-8 h-full">
             <div className="h-full backdrop-blur-2xl bg-white/40 dark:bg-gray-800/40 border border-white/50 dark:border-gray-700 rounded-3xl shadow-2xl p-6 sm:p-10 flex flex-col">
               <h1 className="text-3xl font-black text-cyan-950 dark:text-cyan-400 mb-6 tracking-tight">Doctor Profile</h1>
@@ -176,12 +214,13 @@ export default function P_DoctorProfile() {
               </div>
 
               <div className="border-t border-white/40 dark:border-gray-700 pt-6 flex-1 flex flex-col justify-between">
+              
                 <div>
                   <h3 className="text-xl font-bold text-cyan-950 dark:text-cyan-400 mb-3 tracking-tight uppercase tracking-widest text-sm">
                     Professional Summary
                   </h3>
                   <p className="text-sm text-cyan-900 dark:text-gray-200 leading-relaxed font-semibold opacity-90">
-                    Dedicated healthcare professional with extensive experience in providing comprehensive medical services and high-quality patient care. Committed to medical excellence and innovation, ensuring a focus on rehabilitation milestones and the highest standards of clinical practice.
+                    {doctor?.professional_summary || 'No professional summary provided.'} 
                   </p>
                 </div>
 
