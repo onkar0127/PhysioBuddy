@@ -12,6 +12,7 @@ import PatientList from './pages/PatientsList.jsx';
 import Landingpage from './pages/Landingpage.jsx';
 import LiveSession from './pages/livesession.jsx';
 import DoctorHome from './pages/DoctorHome.jsx';
+import PatientStatusPage from './pages/PatientStatusPage.jsx';
 
 
 
@@ -21,22 +22,25 @@ function App() {
     <BrowserRouter>
       <Routes>
 
+        {/* ------------------- Common URLs ------------------- */}
         <Route path="/" element={<Landingpage />} />
-        <Route path="/patient-home" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/doctor-profile" element={<D_Profile />} />
-        <Route path="/patient-profile" element={<P_Profile />} />
-        <Route path="/assign-exercise" element={<AssignExercise />} />
-        <Route path='/live' element={<WebStream />}/>
-        <Route path='/exercise-list' element={<ExerciseList/>}/>
-        <Route path='/customer-care' element={<CustomerCare/>}/>
-        <Route path='/patient-list' element={<PatientList/>}/>
-        <Route path="/live2" element={<LiveSession/>}/>
-        <Route path="/doctor-home" element={<DoctorHome/>}/>
-
+        <Route path="/live" element={<WebStream />}/>
+        <Route path="/customer-care" element={<CustomerCare/>}/>
         
 
+        {/* ------------------- Patient URLs ------------------- */}
+        <Route path="/patient-home" element={<Home />} />  {/* <--- Replace it with Patient Home name*/}
+        <Route path="/patient-profile" element={<P_Profile />} />
+        <Route path="/exercise-list" element={<ExerciseList/>}/>
+        <Route path="/live2" element={<LiveSession/>}/>
 
+
+        {/* ------------------- Doctor URLs ------------------- */}
+        <Route path="/doctor-home" element={<DoctorHome/>}/>
+        <Route path="/doctor-profile" element={<D_Profile />} />
+        <Route path="/assign-exercise" element={<AssignExercise />} />
+        <Route path="/patient-list" element={<PatientStatusPage/>}/>
 
       </Routes>
     </BrowserRouter>
