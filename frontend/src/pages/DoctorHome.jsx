@@ -10,7 +10,7 @@ const Navbar = ({ theme, toggleTheme }) => {
 
   const navLinks = [
     { name: 'Home', href: '/doctor-home' },
-    { name: 'Patient Status', href: '/patient-status' },
+    { name: 'Patient Status', href: '/patient-list' },
     { name: 'New Assignment', href: '/new-assignment' },
     { name: 'Doctor Profile', href: '/doctor-profile' },
   ];
@@ -99,7 +99,7 @@ function HomeContent({ stats }) {
             Manage your patients, assign exercises, and track recovery — all from one elegant workspace.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-            <a href="/patient-status" className="px-10 py-4 text-lg font-bold rounded-2xl text-white bg-cyan-600 shadow-xl shadow-cyan-500/40 hover:bg-cyan-700 transition-all duration-300 hover:scale-105 text-center">
+            <a href="/patient-list" className="px-10 py-4 text-lg font-bold rounded-2xl text-white bg-cyan-600 shadow-xl shadow-cyan-500/40 hover:bg-cyan-700 transition-all duration-300 hover:scale-105 text-center">
               View Patient Status
             </a>
             <a href="/new-assignment" className="px-10 py-4 text-lg font-bold rounded-2xl text-cyan-700 dark:text-cyan-400 border-2 border-cyan-400 dark:border-cyan-600 hover:bg-white/50 dark:hover:bg-cyan-900/20 transition-all duration-300 text-center">
@@ -139,23 +139,23 @@ export default function DoctorHome() {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
   const [records, setRecords] = useState([]);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/doctor/get-my-patients/`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        const data = await res.json();
-        setRecords(Array.isArray(data) ? data : []);
-      } catch (err) { 
-        console.error("Stats fetch failed:", err); 
-        setRecords([]); 
-      }
-    };
-    fetchStats();
-  }, []);
+  // useEffect(() => {
+  //   const fetchStats = async () => {
+  //     try {
+  //       const res = await fetch(`${API_BASE}/api/doctor/get-my-patients/`, {  // Why to call this API
+  //         method: 'GET',
+  //         headers: { 'Content-Type': 'application/json' }
+  //       });
+  //       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+  //       const data = await res.json();
+  //       setRecords(Array.isArray(data) ? data : []);
+  //     } catch (err) { 
+  //       console.error("Stats fetch failed:", err); 
+  //       setRecords([]); 
+  //     }
+  //   };
+  //   fetchStats();
+  // }, []);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');

@@ -88,7 +88,7 @@ export default function P_DoctorProfile() {
 
   const navLinks = [
     { name: 'Home', href: '/doctor-home' },
-    { name: 'Patient Status', href: '/patient-status' },
+    { name: 'Patient Status', href: '/patient-list' },
     { name: 'New Assignment', href: '/new-assignment' },
     { name: 'Doctor Profile', href: '/doctor-profile' },
   ];
