@@ -60,6 +60,7 @@ const Navbar = ({ theme, toggleTheme }) => {
     </nav>
   );
 };
+
 // ── Dashboard Stat Card ───────────────────────────────────────────
 const StatCard = ({ value, label, icon }) => (
   <div className="flex flex-col items-center justify-center p-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-md rounded-2xl shadow-xl border border-white/50 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
@@ -78,7 +79,8 @@ const FeatureCard = ({ icon, title, desc }) => (
   </div>
 );
 
-function HomeContent({ stats }) {
+// Added doctorName as a prop here
+function HomeContent({ stats, doctorName }) {
   const features = [
     { icon: '🩺', title: 'Patient Insights', desc: 'Track every patient\'s rehab progress in real time.' },
     { icon: '📝', title: 'Quick Assignments', desc: 'Create new exercise plans in seconds.' },
@@ -92,14 +94,15 @@ function HomeContent({ stats }) {
     <div className="space-y-0">
       <section className="pt-24 pb-28 text-center px-4">
         <div className="max-w-5xl mx-auto animate-in fade-in zoom-in duration-700">
+          {/* Changed hardcoded "Dr. Sharma" to dynamic doctorName */}
           <h1 className="text-5xl sm:text-7xl font-black text-cyan-950 dark:text-white tracking-tighter leading-tight">
-            Welcome back, <br /> Dr. Sharma.
+            Welcome back, <br /> {doctorName ? `Dr. ${doctorName}` : 'Doctor'}.
           </h1>
           <p className="mt-6 max-w-2xl mx-auto text-lg sm:text-xl text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
             Manage your patients, assign exercises, and track recovery — all from one elegant workspace.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-            <a href="/patient-list" className="px-10 py-4 text-lg font-bold rounded-2xl text-white bg-cyan-600 shadow-xl shadow-cyan-500/40 hover:bg-cyan-700 transition-all duration-300 hover:scale-105 text-center">
+            <a href="/patient-status" className="px-10 py-4 text-lg font-bold rounded-2xl text-white bg-cyan-600 shadow-xl shadow-cyan-500/40 hover:bg-cyan-700 transition-all duration-300 hover:scale-105 text-center">
               View Patient Status
             </a>
             <a href="/new-assignment" className="px-10 py-4 text-lg font-bold rounded-2xl text-cyan-700 dark:text-cyan-400 border-2 border-cyan-400 dark:border-cyan-600 hover:bg-white/50 dark:hover:bg-cyan-900/20 transition-all duration-300 text-center">
@@ -138,24 +141,29 @@ function HomeContent({ stats }) {
 export default function DoctorHome() {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
   const [records, setRecords] = useState([]);
+  // 1. Created state for storing the fetched doctor name
+  const [doctorName, setDoctorName] = useState('');
 
-  // useEffect(() => {
-  //   const fetchStats = async () => {
-  //     try {
-  //       const res = await fetch(`${API_BASE}/api/doctor/get-my-patients/`, {  // Why to call this API
-  //         method: 'GET',
-  //         headers: { 'Content-Type': 'application/json' }
-  //       });
-  //       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-  //       const data = await res.json();
-  //       setRecords(Array.isArray(data) ? data : []);
-  //     } catch (err) { 
-  //       console.error("Stats fetch failed:", err); 
-  //       setRecords([]); 
-  //     }
-  //   };
-  //   fetchStats();
-  // }, []);
+  // 2. Added hook to fetch doctor name on component mount
+  useEffect(() => {
+    const fetchDoctorName = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/doctor/get-name/`, {
+          method: 'GET',
+          credentials: 'include', // Handles session/cookie tracking if necessary
+        });
+        if (!response.ok) throw new Error('Failed to fetch doctor name');
+        const data = await response.json();
+        
+        // Update state with name from backend (assumes backend key is "doctor_name")
+        setDoctorName(data.doctor_name || '');
+      } catch (err) {
+        console.error("Error fetching doctor name:", err);
+      }
+    };
+
+    fetchDoctorName();
+  }, []);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -176,7 +184,8 @@ export default function DoctorHome() {
       <Navbar theme={theme} toggleTheme={toggleTheme} />
 
       <main className="flex-1">
-        <HomeContent stats={stats} />
+        {/* 3. Passed doctorName down to HomeContent */}
+        <HomeContent stats={stats} doctorName={doctorName} />
       </main>
 
       <footer className="bg-white/40 dark:bg-gray-950 py-10 mt-10 transition-colors duration-500 text-center border-t border-white/30 dark:border-gray-800">

@@ -267,3 +267,13 @@ def update_patient_image(request):
             
     return JsonResponse({'error': 'Invalid method'}, status=405)
 
+def get_doctor_name(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    
+    try:
+        doctor = get_object_or_404(DoctorProfile, user=request.user)
+        doctor_name = doctor.user.username
+        return JsonResponse({'doctor_name': doctor_name}, status=200)
+    except Http404:
+        return JsonResponse({'error': 'Doctor profile not found'}, status=404)
