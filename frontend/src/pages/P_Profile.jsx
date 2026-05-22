@@ -161,11 +161,7 @@ export default function P_PatientProfile() {
                 </h3>
                 
                 <div className="space-y-6">
-                  <div>
-                    <p className="text-sm text-cyan-900 dark:text-gray-200 leading-relaxed font-semibold opacity-90">
-                      Comprehensive health profile maintained for accurate medical record keeping and continuity of care. This summary reflects progress and highlights areas of focus for rehabilitation.
-                    </p>
-                  </div>
+                
 
                   <div className="p-4 bg-cyan-600/10 dark:bg-cyan-400/5 border-l-4 border-cyan-600 rounded-r-xl">
                     <p className="text-xs font-bold text-cyan-700 dark:text-cyan-400 italic">
