@@ -16,7 +16,7 @@ const Navbar = ({ theme, toggleTheme }) => {
 
   const navLinks = [
     { name: 'Home', href: '/doctor-home' },
-    { name: 'Patient Status', href: '/patient-list' },
+    { name: 'Patient Status', href: '/patient-status' },
     { name: 'New Assignment', href: '/new-assignment' },
     { name: 'Doctor Profile', href: '/doctor-profile' },
   ];

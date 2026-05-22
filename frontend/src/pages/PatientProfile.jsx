@@ -76,7 +76,7 @@ export default function P_PatientProfile() {
         <div className="max-w-7xl mx-auto px-4 h-20 flex justify-between items-center">
           <img src={pb} alt="Logo" className="h-12 w-auto" />
           <div className="flex items-center gap-6">
-            <a href="/home" className="text-sm font-bold text-cyan-900 dark:text-cyan-400 hover:text-cyan-600 transition">Home</a>
+            <a href="/patient-home" className="text-sm font-bold text-cyan-900 dark:text-cyan-400 hover:text-cyan-600 transition">Home</a>
             <button onClick={toggleTheme} className="p-2 rounded-full bg-white/50 dark:bg-gray-800 text-cyan-800 dark:text-yellow-400 shadow-inner">
               {theme === 'light' ? "🌙" : "☀️"}
             </button>
