@@ -9,8 +9,9 @@ __pycache__/
 env/
 ENV/
 #virtual environment 
-venv/
-
+phvenv/
+C:\Users\Onkar Gite\Desktop\PHYSIOBUDDY\PhysioBuddy\backend\physioapp\migrations\0006_remove_patientprofile_image_and_more.py
+.gitignore/
 # Django specific
 db.sqlite3
 media/
