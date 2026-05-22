@@ -98,6 +98,7 @@ class AssignedExercise(models.Model):
     target_reps = models.IntegerField()
     is_completed = models.BooleanField(default=False)
     date_assigned = models.DateTimeField(auto_now_add=True)
+    assigned_time = models.TimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.patient.user.username}'s assignment of {self.exercise.name}"

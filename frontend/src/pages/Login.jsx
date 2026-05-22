@@ -54,7 +54,7 @@ const handleSubmit = async (e) => {
 
     if (result.user === "doctor") {
         console.log("Doctor");
-        navigate("/doctor-profile");
+        navigate("/doctor-home");
       } 
     else if (result.user === "patient") {
         window.location.href = "/patient-home";

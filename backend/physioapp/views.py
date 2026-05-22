@@ -94,6 +94,9 @@ def update_doctor_image(request):
     return JsonResponse({'error': 'Invalid method'}, status=405)
 
 def get_patient_status(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    
     try:
         curr_doc = DoctorProfile.objects.get(user = request.user)
     except DoctorProfile.DoesNotExist:
@@ -118,7 +121,11 @@ def get_patient_status(request):
             patient_data_list.append(patient_data)
     return JsonResponse(patient_data_list, safe=False)
 
+@csrf_exempt
 def my_patients(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+        
     try:
         curr_doc = DoctorProfile.objects.get(user = request.user)
         
@@ -142,31 +149,41 @@ def my_patients(request):
             'exercises': exercise_list
         })
 
+@csrf_exempt
 def submit_assignment(request):
-    if request.method == 'GET':
-        doctor_name = request.GET.get('doctor')
-        patient_name = request.GET.get('patient')
-        exercise_name = request.GET.get('exercise')
-        rep_count = int(request.GET.get('reps'))
-
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Authentication required'}, status=401)
+        
+        try:
+            data = json.loads(request.body)
+            patient_name = data.get('patient_name')
+            exercise_name = data.get('exercise_name')
+            rep_count = data.get('repetitions')
+            
+            if not all([patient_name, exercise_name, rep_count]):
+                return JsonResponse({'error': 'Missing required fields'}, status=400)
+                
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        
         try:
             # Creating respective objects
             patient_obj = PatientProfile.objects.get(user__username=patient_name)
-            doctor_obj = DoctorProfile.objects.get(user__username=doctor_name)
+            doctor_obj = DoctorProfile.objects.get(user=request.user)  # Use authenticated user
             exercise_obj = Exercise.objects.get(name=exercise_name)
 
         except PatientProfile.DoesNotExist:
-            return JsonResponse({'error': 'Patient doesn\'t exists'}, status=404)
+            return JsonResponse({'error': 'Patient doesn\'t exist'}, status=404)
         except Exercise.DoesNotExist:
-            return JsonResponse({'error': 'Excercise doesn\'t exists'}, status=404)
+            return JsonResponse({'error': 'Exercise doesn\'t exist'}, status=404)
         except DoctorProfile.DoesNotExist:
-            return JsonResponse({'error': 'Doctor doesn\'t exists'}, status=404)
+            return JsonResponse({'error': 'Doctor profile not found'}, status=404)
         
-        else:
-            # Creating AssignedExercise Object
-            assignment = AssignedExercise(patient=patient_obj, assigned_by=doctor_obj, exercise=exercise_obj, target_reps=rep_count)
-            assignment.save()
-            return JsonResponse({'message': 'Assignment created successfully'})
+        # Creating AssignedExercise Object
+        assignment = AssignedExercise(patient=patient_obj, assigned_by=doctor_obj, exercise=exercise_obj, target_reps=rep_count)
+        assignment.save()
+        return JsonResponse({'message': 'Assignment created successfully'})
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
