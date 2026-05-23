@@ -4,6 +4,13 @@ import pb from "../assets/pb.png";
 
 const API_BASE = 'http://127.0.0.1:8000';
 
+// Helper function to get CSRF token for Django
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? decodeURIComponent(match[2]) : '';
+}
+
+
 export default function Navbar({ role }) {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -22,7 +29,11 @@ export default function Navbar({ role }) {
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      await fetch(`${API_BASE}/api/logout/`, { method: 'POST', credentials: 'include' });
+      await fetch(`${API_BASE}/api/logout/`, { method: 'POST',  headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        credentials: 'include' });
     } catch (err) { console.error("Logout failed", err); } 
     finally { navigate('/'); }
   };
