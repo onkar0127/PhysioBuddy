@@ -1,28 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import pb from "../assets/pb.png"; // Import the logo image
+import { useNavigate } from 'react-router-dom'; // Ensure this is available
+import Navbar from '../components/Navbar'; 
+import pb from "../assets/pb.png";
 
 const API_BASE = 'http://127.0.0.1:8000';
 
 export default function P_DoctorProfile() {
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('theme') || 'dark';
-  }); 
   const [doctor, setDoctor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
-
-  // Logic to detect which page we are on for the underline
-  const currentPath = window.location.pathname;
-
-  useEffect(() => {
-    localStorage.setItem('theme', theme);
-    const root = document.documentElement;
-    if (theme === 'dark') root.classList.add('dark');
-    else root.classList.remove('dark');
-  }, [theme]);
 
   useEffect(() => {
     const fetchDoctorData = async () => {
@@ -31,7 +19,7 @@ export default function P_DoctorProfile() {
         const response = await fetch(`${API_BASE}/api/doctor/profile/`, {
           method: 'GET',
           credentials: 'include',
-        }); 
+        });
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
         setDoctor({
@@ -44,8 +32,8 @@ export default function P_DoctorProfile() {
           professional_summary: data.professional_summary || 'Dedicated healthcare professional',
           doctor_image: data.doctor_image || null,
           city: data.city || 'N/A',
-          gender: data.gender || 'N/A', 
-          hospital_name: data.hospital_name || 'N/A', 
+          gender: data.gender || 'N/A',
+          hospital_name: data.hospital_name || 'N/A',
         });
       } catch (err) {
         setError("Could not load doctor profile.");
@@ -84,14 +72,6 @@ export default function P_DoctorProfile() {
   };
 
   const triggerFileInput = () => fileInputRef.current.click();
-  const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
-
-  const navLinks = [
-    { name: 'Home', href: '/doctor-home' },
-    { name: 'Patient Status', href: '/patient-status' },
-    { name: 'New Assignment', href: '/new-assignment' },
-    { name: 'Doctor Profile', href: '/doctor-profile' },
-  ];
 
   if (loading) return (
     <div className="h-screen w-full flex items-center justify-center bg-cyan-50 dark:bg-gray-900">
@@ -102,51 +82,14 @@ export default function P_DoctorProfile() {
   return (
     <div className="h-screen w-full font-[Inter] bg-gradient-to-r from-cyan-100 via-cyan-200 to-blue-100 dark:from-gray-950 dark:via-gray-900 dark:to-slate-900 transition-colors duration-500 overflow-hidden flex flex-col">
       
-      {/* ── Updated Navbar: Logo Image only, Text removed ── */}
-      <nav className="flex-none backdrop-blur-xl bg-white/40 dark:bg-gray-900/60 border-b border-white/30 dark:border-gray-800 shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 h-20 flex justify-between items-center">
-          <div className="flex items-center">
-            <a href="/doctor-home">
-              <img 
-                src={pb} 
-                alt="PhysioBuddy Logo" 
-                className="h-14 w-auto object-contain hover:scale-105 transition-transform duration-300" 
-              />
-            </a>
-          </div>
-          
-          <div className="hidden md:flex items-center gap-10">
-            {navLinks.map((link) => {
-              const isActive = currentPath === link.href;
-              return (
-                <a 
-                  key={link.name} 
-                  href={link.href} 
-                  className={`text-xl font-bold tracking-tight transition-all duration-300 hover:scale-105 ${
-                    isActive 
-                      ? 'text-cyan-600 underline underline-offset-[12px] decoration-3' 
-                      : 'text-cyan-900 dark:text-gray-300 hover:text-cyan-600'
-                  }`}
-                >
-                  {link.name}
-                </a>
-              );
-            })}
-            
-            <button onClick={toggleTheme} className="p-2.5 rounded-full bg-white/50 dark:bg-gray-800 text-cyan-800 dark:text-yellow-400 border border-white/30 dark:border-gray-700 transition-all hover:bg-white dark:hover:bg-gray-700 shadow-sm">
-              {theme === 'light' ? "🌙" : "☀️"}
-            </button>
-          </div>
-        </div>
-      </nav>
+      {/* Navbar component ensures internal routing without refreshes */}
+      <Navbar role="doctor" />
 
-      {/* ── Main Content ── */}
-      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 overflow-hidden">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch h-full">
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 overflow-y-auto">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
 
-          {/* Left Sidebar */}
-          <aside className="lg:col-span-4 h-full">
-            <div className="h-full backdrop-blur-2xl bg-white/40 dark:bg-gray-800/40 border border-white/50 dark:border-gray-700 rounded-3xl shadow-2xl p-8 text-center flex flex-col justify-center">
+          <aside className="lg:col-span-4">
+            <div className="backdrop-blur-2xl bg-white/40 dark:bg-gray-800/40 border border-white/50 dark:border-gray-700 rounded-3xl shadow-2xl p-8 text-center flex flex-col justify-center">
               
               <div className="relative inline-block mx-auto group mb-4">
                 <img
@@ -187,9 +130,8 @@ export default function P_DoctorProfile() {
             </div>
           </aside>
 
-          {/* Right Content */}
-          <section className="lg:col-span-8 h-full">
-            <div className="h-full backdrop-blur-2xl bg-white/40 dark:bg-gray-800/40 border border-white/50 dark:border-gray-700 rounded-3xl shadow-2xl p-6 sm:p-10 flex flex-col">
+          <section className="lg:col-span-8">
+            <div className="backdrop-blur-2xl bg-white/40 dark:bg-gray-800/40 border border-white/50 dark:border-gray-700 rounded-3xl shadow-2xl p-6 sm:p-10 flex flex-col">
               <h1 className="text-3xl font-black text-cyan-950 dark:text-cyan-400 mb-6 tracking-tight">Doctor Profile</h1>
 
               <div className="bg-cyan-600 dark:bg-cyan-900/80 rounded-2xl p-5 text-white flex items-center gap-6 shadow-xl shadow-cyan-600/20 mb-6">
@@ -213,22 +155,13 @@ export default function P_DoctorProfile() {
                 ))}
               </div>
 
-              <div className="border-t border-white/40 dark:border-gray-700 pt-6 flex-1 flex flex-col justify-between">
-              
-                <div>
-                  <h3 className="text-xl font-bold text-cyan-950 dark:text-cyan-400 mb-3 tracking-tight uppercase tracking-widest text-sm">
-                    Professional Summary
-                  </h3>
-                  <p className="text-sm text-cyan-900 dark:text-gray-200 leading-relaxed font-semibold opacity-90">
-                    {doctor?.professional_summary || 'No professional summary provided.'} 
-                  </p>
-                </div>
-
-                <div className="p-4 bg-cyan-600/10 dark:bg-cyan-400/5 border-l-4 border-cyan-600 rounded-r-xl mt-4">
-                  <p className="text-xs font-bold text-cyan-700 dark:text-cyan-400 italic">
-                    Availability: Available for consultations Monday through Friday, 9:00 AM to 5:00 PM.
-                  </p>
-                </div>
+              <div className="border-t border-white/40 dark:border-gray-700 pt-6">
+                <h3 className="text-xl font-bold text-cyan-950 dark:text-cyan-400 mb-3 tracking-tight uppercase tracking-widest text-sm">
+                  Professional Summary
+                </h3>
+                <p className="text-sm text-cyan-900 dark:text-gray-200 leading-relaxed font-semibold opacity-90">
+                  {doctor?.professional_summary || 'No professional summary provided.'} 
+                </p>
               </div>
             </div>
           </section>
