@@ -30,7 +30,7 @@ const SkeletonCard = () => (
 
 // ─── Exercise Card ────────────────────────────────────────────────
 const ExerciseCard = ({ exercise }) => {
-  const { exercise_id, exercise_name, target_reps, is_completed, date_assigned } = exercise;
+  const { exercise_id, assignment_id, exercise_name, target_reps, is_completed, date_assigned } = exercise;
 
   const formattedDate = date_assigned
     ? new Date(date_assigned).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -77,7 +77,7 @@ const ExerciseCard = ({ exercise }) => {
       {/* Native <a> tag instead of React Router <Link> */}
       {!is_completed && (
         <a
-          href={`/live?id=${exercise_id}&name=${encodeURIComponent(exercise_name)}&reps=${target_reps}`}
+          href={`/live?exercise_id=${exercise_id}&assignment_id=${assignment_id}&name=${encodeURIComponent(exercise_name)}&reps=${target_reps}`}
           className="flex-shrink-0 text-center px-6 py-2.5 rounded-full text-sm font-bold text-white bg-cyan-600 hover:bg-cyan-700 shadow-lg shadow-cyan-500/30 transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
         >
           ▶ Start
