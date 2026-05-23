@@ -7,6 +7,7 @@ urlpatterns = [
 
     # Comman API endpoints
     path('api/login/', views.login_api),
+    path('api/logout/', views.logout_api),
     
     # Routes for Doctors
     path('api/doctor/get-name/', views.get_doctor_name),

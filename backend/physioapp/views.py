@@ -33,6 +33,12 @@ def login_api(request):
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+def logout_api(request):
+    if request.method == 'POST':
+        logout(request)
+        return JsonResponse({'message': 'Logged out successfully'}, status=200)
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
 
 
 # APIs for Doctors
