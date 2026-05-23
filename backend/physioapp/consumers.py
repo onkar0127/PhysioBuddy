@@ -77,7 +77,7 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
             h, w = frame.shape[:2]
             lm = results.pose_landmarks.landmark
             # Dispatch to the correct detector 
-            detector = self.detectors.get(exercise_id) 
+            detector = self.detectors.get(exercise_id)
             if detector: detector(lm, h, w)
 
         await self.send(text_data=json.dumps({
@@ -161,7 +161,6 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
 
         if not arms_straight:
             # Arms are bent — ignore frame, do not change state
-            print(f"[SKIP] Arms bent — L={left_angle:.1f}° R={right_angle:.1f}°")
             return
 
         # --- Step 2: Check wrist position relative to shoulder ---

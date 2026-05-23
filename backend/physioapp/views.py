@@ -234,6 +234,7 @@ def get_exercise_list(request):
     for assignment in assignments:
         assignments_list.append({
             'patient_username': assignment.patient.user.username,
+            'exercise_id': assignment.exercise.id,
             'exercise_name': assignment.exercise.name,
             'exercise_video_url': assignment.exercise.demo_video_url,
             'target_reps': assignment.target_reps,
