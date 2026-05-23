@@ -1,11 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
 
+// Helper function to get CSRF token for Django
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? decodeURIComponent(match[2]) : '';
+}
+
 export default function WebcamStream() {
   // Use native JavaScript to parse URL parameters
   const searchParams = new URLSearchParams(window.location.search);
-  const exercise_id = searchParams.get("id");
+  const exercise_id = searchParams.get("exercise_id");
+  const assignment_id = searchParams.get("assignment_id");
   const target_reps = searchParams.get("reps");
   const exercise_name = searchParams.get("name") || "Exercise";
+  // Assuming patient_name is passed in the URL (e.g., &patient_name=John)
+  const patient_name = searchParams.get("patient_name") || "Patient"; 
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -102,7 +111,6 @@ export default function WebcamStream() {
       const base64 = dataUrl.split(",")[1];
 
       // Send dynamic data to Django via websocket
-      // IMPORTANT: We use parseInt() to ensure the backend receives integers, not strings!
       wsRef.current.send(JSON.stringify({ 
         frame: base64, 
         exercise_id: parseInt(exercise_id, 10), 
@@ -113,6 +121,33 @@ export default function WebcamStream() {
     };
     send();
   }
+
+  // --- API Submission & Redirection ---
+  const handleDone = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/update-completion/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          assignment_id: parseInt(assignment_id, 10),
+          patient_name: patient_name
+        }),
+      });
+
+      if (response.ok) {
+        window.location.href = "http://127.0.0.1:5173/exercise-list";
+      } else {
+        console.error("Failed to update status on the server.");
+        alert("Something went wrong saving your progress. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error updating completion:", error);
+    }
+  };
 
   // Prevent rendering if we are about to redirect
   if (!exercise_id || !target_reps) return null;
@@ -172,9 +207,28 @@ export default function WebcamStream() {
           </div>
           
           {repCount >= parseInt(target_reps, 10) && (
-             <div style={{ marginTop: "24px", padding: "8px 16px", backgroundColor: "#10b981", color: "white", borderRadius: "8px", fontWeight: "bold", fontSize: "14px", textAlign: "center", animation: "pulse 2s infinite" }}>
-               Goal Reached! 🎉
-             </div>
+            <div style={{ marginTop: "24px", padding: "16px", backgroundColor: "#10b981", color: "white", borderRadius: "12px", textAlign: "center", animation: "pulse 2s infinite" }}>
+              <div style={{ fontWeight: "bold", fontSize: "16px", marginBottom: "12px" }}>
+                Goal Reached! 🎉
+              </div>
+              
+              <button 
+                onClick={handleDone}
+                style={{
+                  backgroundColor: "white",
+                  color: "#10b981",
+                  border: "none",
+                  padding: "8px 24px",
+                  borderRadius: "99px",
+                  fontWeight: "bold",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                }}
+              >
+                Done
+              </button>
+            </div>
           )}
         </div>
       </div>

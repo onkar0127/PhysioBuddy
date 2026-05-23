@@ -114,7 +114,11 @@ def get_patient_status(request):
             patient_data = {}
             patient_data['name']=patient.user.username
             exe_list = []
-            assigned_exercises = AssignedExercise.objects.filter(patient=patient, assigned_by=curr_doc)
+            assigned_exercises = AssignedExercise.objects.filter(
+                                                                    patient=patient, 
+                                                                    assigned_by=curr_doc,
+                                                                    date_assigned__date = timezone.now().date()
+                                                                )
             for assigned_exercise in assigned_exercises:
                 exe_list.append(
                                 {
@@ -233,6 +237,7 @@ def get_exercise_list(request):
     #today = timezone.now().date()
     assignments = AssignedExercise.objects.filter(
         patient=Patientobj,
+        date_assigned__date = timezone.now().date()
        
     ).select_related('exercise')
     
@@ -241,6 +246,7 @@ def get_exercise_list(request):
         assignments_list.append({
             'patient_username': assignment.patient.user.username,
             'exercise_id': assignment.exercise.id,
+            'assignment_id': assignment.id,
             'exercise_name': assignment.exercise.name,
             'exercise_video_url': assignment.exercise.demo_video_url,
             'target_reps': assignment.target_reps,
@@ -284,3 +290,30 @@ def get_doctor_name(request):
         return JsonResponse({'doctor_name': doctor_name}, status=200)
     except Http404:
         return JsonResponse({'error': 'Doctor profile not found'}, status=404)
+
+
+def update_completion_status(request):
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Authentication required'}, status=401)
+        
+        try:
+            data = json.loads(request.body)
+            assignment_id = data.get('assignment_id')
+        
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        
+        try:
+            assignment = AssignedExercise.objects.get(
+                                                        id=assignment_id,
+                                                    )
+        except AssignedExercise.DoesNotExist:
+            return JsonResponse({'error': 'Assignment not found'}, status=404)
+        
+        assignment.is_completed = True
+        assignment.save()
+        
+        return JsonResponse({'message': 'Completion status updated successfully'})
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)

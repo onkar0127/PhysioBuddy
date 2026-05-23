@@ -21,5 +21,6 @@ urlpatterns = [
     path('api/patient/profile/', views.patient_profile_api),
     path('api/get-exercise-list/', views.get_exercise_list),
     path('api/patient/update-image/', views.update_patient_image),
+    path('api/update-completion/', views.update_completion_status),
 ]
 
