@@ -204,6 +204,8 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
             self.op_arms_raised = False
             self.op_arms_down   = True
             print(f"[COUNTED] Rep = {self.counter}")
+        else:
+            print(f"Target of {self.target_reps} reps reached!")
     
    
     # ------------------ Quadriceps Stretch Detection Logic --------------------
@@ -239,6 +241,8 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
             self.counter += 1
             self.ready_to_count = False
             self.is_fold = False
+        else:
+            print(f"Target of {self.target_reps} reps reached!")
 
 
     # -------------------------------- SquatsDetection Logic ---------------------------
@@ -296,6 +300,8 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
             self.counter += 1
             self.ready_to_count = False
             self.is_fold = False
+        else:
+            print(f"Target of {self.target_reps} reps reached!")
  
     # ------------------ Standing Knee Lift Detection Logic --------------------
     def standing_knee_lift(self, lm, h, w):
@@ -351,3 +357,5 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
             self.counter += 1
             self.ready_to_count = False
             self.is_fold = False
+        else:
+            print(f"Target of {self.target_reps} reps reached!")
