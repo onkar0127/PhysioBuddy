@@ -45,10 +45,6 @@ function App() {
         <Route path="/doctor-profile" element={<D_Profile />} />
         
 
-        
-
-
-
       </Routes>
     </BrowserRouter>
   );
