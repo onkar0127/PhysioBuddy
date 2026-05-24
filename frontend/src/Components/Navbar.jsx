@@ -39,7 +39,7 @@ export default function Navbar({ role }) {
   };
 
   const navLinks = role === 'doctor' 
-    ? [{ name: 'Home', href: '/doctor-home' }, { name: 'Patient Status', href: '/patient-status' },  { name: 'Doctor Profile', href: '/doctor-profile' }, { name: 'New Assignment', href: '/new-assignment' }]
+    ? [{ name: 'Home', href: '/doctor-home' }, { name: 'Patient Status', href: '/patient-status' },  { name: 'New Assignment', href: '/new-assignment' },{ name: 'Doctor Profile', href: '/doctor-profile' }]
     : [{ name: 'Home', href: '/patient-home' }, { name: 'Exercises', href: '/exercise-list' }, { name: 'Profile', href: '/patient-profile' }, { name: 'Customer Care', href: '/customer-care' }];
 
   return (
