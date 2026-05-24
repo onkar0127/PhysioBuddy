@@ -128,7 +128,8 @@ def get_patient_status(request):
                                 }
                                 )
             patient_data['assigned_exercises'] = exe_list
-            patient_data_list.append(patient_data)
+            if exe_list:
+                patient_data_list.append(patient_data)
     return JsonResponse(patient_data_list, safe=False)
 
 @csrf_exempt

@@ -1,6 +1,23 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+BLOOD_TYPES=[
+        ('A+', 'A positive'),
+        ('A-', 'A negative'),
+        ('B+', 'B positive'),
+        ('B-', 'B negative'),
+        ('AB+', 'AB positive'),
+        ('AB-', 'AB negative'),
+        ('O+', 'O positive'),
+        ('O-', 'O negative'),
+    ]
+
+GENDER_TYPES=[
+        ('male', 'Male'),
+        ('female', 'Female'),
+    ]
+
+
 class DoctorProfile(models.Model):
     """
     Model to store a doctor's specific information.
@@ -10,7 +27,7 @@ class DoctorProfile(models.Model):
     speciality = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     image_base64 = models.TextField(null=True, blank=True)
-    gender = models.CharField(max_length=10, blank=True, null=True)
+    gender = models.CharField(max_length=10, blank=True, null=True, choices=GENDER_TYPES)
     city = models.CharField(max_length=100, blank=True, null=True)  
     hospital_name = models.CharField(max_length=255, blank=True, null=True)
     experience_years = models.IntegerField(max_length=3,null=True, blank=True)
@@ -26,23 +43,6 @@ class PatientProfile(models.Model):
     """
     Model to store a patient's specific information.
     """
-
-    BLOOD_TYPES=[
-        ('A+', 'A positive'),
-        ('A-', 'A negative'),
-        ('B+', 'B positive'),
-        ('B-', 'B negative'),
-        ('AB+', 'AB positive'),
-        ('AB-', 'AB negative'),
-        ('O+', 'O positive'),
-        ('O-', 'O negative'),
-    ]
-
-    GENDER_TYPES=[
-        ('male', 'Male'),
-        ('female', 'Female'),
-    ]
-
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     date_of_birth = models.DateField(blank=True, null=True)
     gender = models.CharField(max_length=10, blank=True, null=True, choices=GENDER_TYPES)
