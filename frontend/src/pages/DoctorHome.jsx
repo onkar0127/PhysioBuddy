@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar'; // 1. Import the shared component
+import { Link } from 'react-router-dom'; // 1. Added Link import
+import Navbar from '../components/Navbar'; 
 import pb from "../assets/pb.png";
 
 const API_BASE = 'http://127.0.0.1:8000';
 
-// HomeContent Component (Moved outside to clean up)
 function HomeContent({ stats, doctorName }) {
   const features = [
     { icon: '🩺', title: 'Patient Insights', desc: 'Track every patient\'s rehab progress in real time.' },
@@ -26,12 +26,13 @@ function HomeContent({ stats, doctorName }) {
             Manage your patients, assign exercises, and track recovery — all from one elegant workspace.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-            <a href="/patient-status" className="px-10 py-4 text-lg font-bold rounded-2xl text-white bg-cyan-600 shadow-xl shadow-cyan-500/40 hover:bg-cyan-700 transition-all duration-300 hover:scale-105 text-center">
+            {/* 2. Swapped <a> for <Link to="..."> */}
+            <Link to="/patient-status" className="px-10 py-4 text-lg font-bold rounded-2xl text-white bg-cyan-600 shadow-xl shadow-cyan-500/40 hover:bg-cyan-700 transition-all duration-300 hover:scale-105 text-center">
               View Patient Status
-            </a>
-            <a href="/new-assignment" className="px-10 py-4 text-lg font-bold rounded-2xl text-cyan-700 dark:text-cyan-400 border-2 border-cyan-400 dark:border-cyan-600 hover:bg-white/50 dark:hover:bg-cyan-900/20 transition-all duration-300 text-center">
+            </Link>
+            <Link to="/new-assignment" className="px-10 py-4 text-lg font-bold rounded-2xl text-cyan-700 dark:text-cyan-400 border-2 border-cyan-400 dark:border-cyan-600 hover:bg-white/50 dark:hover:bg-cyan-900/20 transition-all duration-300 text-center">
               + New Assignment
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -81,8 +82,6 @@ export default function DoctorHome() {
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-gradient-to-br from-cyan-100 to-blue-100 dark:from-gray-950 dark:to-slate-900 transition-colors duration-500 font-[Inter]">
-      
-      {/* 2. Implementation: Using the new shared component */}
       <Navbar role="doctor" />
 
       <main className="flex-1">
