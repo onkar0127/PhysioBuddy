@@ -8,10 +8,14 @@ from django.views.decorators.csrf import csrf_exempt
 
 # Common API
 def login_api(request):
-    if request.method == 'GET':
-            # Get the data
-            username = request.GET.get('username')
-            password = request.GET.get('password')
+    if request.method == 'POST':
+            # Get the data from JSON body
+            try:
+                data = json.loads(request.body)
+                username = data.get('username')
+                password = data.get('password')
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Invalid JSON'}, status=400)
             
             logout(request)
 
