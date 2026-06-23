@@ -1,17 +1,20 @@
 import React, { useState } from "react";
 // Removed: import { Loader2 } from 'lucide-react'; 
 
-// Mock Cookies object to simulate js-cookie behavior for CSRF token retrieval.
-// In a real application, you would install and import 'js-cookie' from a package manager.
-const Cookies = {
-  get: (key) => {
-    if (key === 'csrftoken') {
-      // This is a dummy token for the demo. In a live Django environment, 
-      // the server sets this cookie automatically, and it's sent back by the browser.
-      return "mock-csrf-token-for-django";
+// Utility function to get CSRF token from cookies
+const getCookie = (name) => {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
     }
-    return null;
-  },
+  }
+  return cookieValue;
 };
 
 // NOTE: These variables simulate the imports from your original file:
@@ -40,12 +43,27 @@ const handleSubmit = async (e) => {
   setError(null);
 
   const { username, password } = form;
-  const loginUrl = `http://127.0.0.1:8000/api/login/?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+  const loginUrl = "http://127.0.0.1:8000/api/login/";
 
   try {
+    // Ensure we have a CSRF token by making a GET request first
+    let csrfToken = getCookie('csrftoken');
+    if (!csrfToken) {
+      await fetch(loginUrl, {
+        method: "GET",
+        credentials: "include",
+      });
+      csrfToken = getCookie('csrftoken');
+    }
+
     const response = await fetch(loginUrl, {
-      method: "GET",
+      method: "POST",
       credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken,
+      },
+      body: JSON.stringify({ username, password }),
     });
 
     if (response.ok) {
