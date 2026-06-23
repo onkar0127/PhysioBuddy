@@ -7,22 +7,87 @@ function getCookie(name) {
 }
 
 export default function WebcamStream() {
-  // Use native JavaScript to parse URL parameters
   const searchParams = new URLSearchParams(window.location.search);
   const exercise_id = searchParams.get("exercise_id");
   const assignment_id = searchParams.get("assignment_id");
   const target_reps = searchParams.get("reps");
   const exercise_name = searchParams.get("name") || "Exercise";
-  // Assuming patient_name is passed in the URL (e.g., &patient_name=John)
   const patient_name = searchParams.get("patient_name") || "Patient"; 
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const wsRef = useRef(null);
+  const poseRef = useRef(null);
   
   const [connected, setConnected] = useState(false);
   const [repCount, setRepCount] = useState(0);
   const [cameraError, setCameraError] = useState(null);
+
+  // Initialize MediaPipe Pose locally
+  useEffect(() => {
+    if (typeof window.Pose !== "undefined") {
+      const poseInstance = new window.Pose({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+      });
+      
+      poseInstance.setOptions({
+        modelComplexity: 1,
+        smoothLandmarks: true,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
+      });
+      
+      poseInstance.onResults((results) => {
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+        if (!video || !canvas) return;
+
+        const ctx = canvas.getContext("2d");
+        canvas.width = 640;
+        canvas.height = 360;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Send landmarks to backend
+        if (results.poseLandmarks) {
+          if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+            wsRef.current.send(JSON.stringify({
+              landmarks: results.poseLandmarks,
+              width: 640,
+              height: 360,
+              exercise_id: parseInt(exercise_id, 10),
+              target: parseInt(target_reps, 10)
+            }));
+          }
+
+          // Draw skeleton overlays
+          if (window.drawConnectors && window.drawLandmarks) {
+            try {
+              window.drawConnectors(ctx, results.poseLandmarks, window.POSE_CONNECTIONS, {
+                color: '#00F5C4',
+                lineWidth: 4
+              });
+              window.drawLandmarks(ctx, results.poseLandmarks, {
+                color: '#2979FF',
+                lineWidth: 2
+              });
+            } catch (err) {
+              console.error("Overlay drawing error:", err);
+            }
+          }
+        }
+      });
+      
+      poseRef.current = poseInstance;
+    }
+
+    return () => {
+      if (poseRef.current) {
+        poseRef.current.close();
+      }
+    };
+  }, [exercise_id, target_reps]);
 
   useEffect(() => {
     // 1. STRICT REDIRECTION: Native JavaScript redirect if no ID or REPS
@@ -46,6 +111,7 @@ export default function WebcamStream() {
         
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
+          videoRef.current.play().catch(e => console.error("Error playing video:", e));
         }
         
         startWebSocket();
@@ -88,34 +154,17 @@ export default function WebcamStream() {
 
   function startSendingFrames() {
     const FPS = 10;
-    const send = () => {
-      if (!wsRef.current || wsRef.current.readyState !== 1) return;
+    const send = async () => {
+      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
       
       const video = videoRef.current;
-      const canvas = canvasRef.current;
-      
-      if (!video || !canvas || video.videoWidth === 0) {
-        setTimeout(send, 1000 / FPS);
-        return;
+      if (video && video.readyState >= 2 && poseRef.current) {
+        try {
+          await poseRef.current.send({ image: video });
+        } catch (err) {
+          console.error("MediaPipe frame send error:", err);
+        }
       }
-
-      const ctx = canvas.getContext("2d");
-      const targetW = 640;
-      const targetH = 360;
-      
-      canvas.width = targetW; 
-      canvas.height = targetH;
-      ctx.drawImage(video, 0, 0, targetW, targetH);
-
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
-      const base64 = dataUrl.split(",")[1];
-
-      // Send dynamic data to Django via websocket
-      wsRef.current.send(JSON.stringify({ 
-        frame: base64, 
-        exercise_id: parseInt(exercise_id, 10), 
-        target: parseInt(target_reps, 10)
-      }));
       
       setTimeout(send, 1000 / FPS);
     };
@@ -189,7 +238,17 @@ export default function WebcamStream() {
             autoPlay
             muted 
             playsInline 
-            style={{ width: "100%", height: "100%", objectFit: "cover", transform: "scaleX(-1)", display: cameraError ? "none" : "block" }} 
+            style={{ position: "absolute", width: "1px", height: "1px", opacity: 0, pointerEvents: "none" }} 
+          />
+          <canvas 
+            ref={canvasRef} 
+            style={{ 
+              width: "100%", 
+              height: "100%", 
+              objectFit: "cover", 
+              transform: "scaleX(-1)", 
+              display: cameraError ? "none" : "block" 
+            }} 
           />
         </div>
         
@@ -232,8 +291,6 @@ export default function WebcamStream() {
           )}
         </div>
       </div>
-      
-      <canvas ref={canvasRef} style={{ display: "none" }} />
     </div>
   );
 }

@@ -7,6 +7,13 @@ import mediapipe as mp
 import asyncio
 import math
 
+class LandmarkMock:
+    def __init__(self, x, y, z, visibility):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.visibility = visibility
+
 class ExerciseConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.counter = 0
@@ -16,8 +23,8 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
 
         # Constants:
         # For Bicep Curl Exercise
-        self.BICEP_CURL_UPPER_THRESHOLD = 150
-        self.BICEP_CURL_LOWER_THRESHOLD = 35
+        self.BICEP_CURL_UPPER_THRESHOLD = 140
+        self.BICEP_CURL_LOWER_THRESHOLD = 45
         # For Quadriceps Stretch Exercise
         self.QUADRICEP_UPPER_THRESHOLD = 150
         self.QUADRICEP_LOWER_THRESHOLD = 60
@@ -34,10 +41,6 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
         self.op_arms_down   = False
 
         self.mp_pose = mp.solutions.pose
-        self.pose = self.mp_pose.Pose(
-            min_detection_confidence=0.7,
-            min_tracking_confidence=0.7
-        )
 
         self.detectors = {
             1: self.detect_bicep_curl,
@@ -50,70 +53,106 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        # Cleanup
-        if hasattr(self, "pose"):
-            self.pose.close()
+        pass
 
     async def receive(self, text_data):
-        data = json.loads(text_data)
-        b64 = data.get("frame")
-        exercise_id = data.get("exercise_id")
-        self.target_reps = data.get("target")
+        try:
+            data = json.loads(text_data)
+            landmarks_data = data.get("landmarks")
+            
+            try:
+                exercise_id = int(data.get("exercise_id"))
+            except (TypeError, ValueError):
+                exercise_id = None
+                
+            try:
+                self.target_reps = int(data.get("target"))
+            except (TypeError, ValueError):
+                self.target_reps = 0
+                
+            w = data.get("width", 640)
+            h = data.get("height", 360)
 
-        if not b64:
-            return
+            if landmarks_data and exercise_id is not None:
+                # Map raw coordinate dictionaries to LandmarkMock objects
+                lm = [
+                    LandmarkMock(
+                        item.get("x", 0.0),
+                        item.get("y", 0.0),
+                        item.get("z", 0.0),
+                        item.get("visibility", 1.0)
+                    )
+                    for item in landmarks_data
+                ]
+                
+                # Dispatch to the correct detector 
+                detector = self.detectors.get(exercise_id)
+                if detector:
+                    try:
+                        detector(lm, h, w)
+                    except Exception as det_err:
+                        import traceback
+                        print(f"[ERROR] Detector {exercise_id} failed: {det_err}")
+                        traceback.print_exc()
 
-        # Decode base64 JPEG → numpy BGR
-        img_bytes = base64.b64decode(b64)
-        nparr = np.frombuffer(img_bytes, np.uint8)
-        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
-        # Pose process expects RGB
-        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = await asyncio.get_event_loop().run_in_executor(None, self.pose.process, rgb)
-
-        if results.pose_landmarks:
-
-            h, w = frame.shape[:2]
-            lm = results.pose_landmarks.landmark
-            # Dispatch to the correct detector 
-            detector = self.detectors.get(exercise_id)
-            if detector: detector(lm, h, w)
-
-        await self.send(text_data=json.dumps({
-            # "frame": b64_out,
-            "reps": self.counter,
-            "exercise_id": exercise_id
-        }))
+            await self.send(text_data=json.dumps({
+                "reps": self.counter,
+                "exercise_id": exercise_id
+            }))
+        except Exception as e:
+            import traceback
+            print(f"[ERROR] WebSocket receive failed: {e}")
+            traceback.print_exc()
 
     # ------------------ Angle Calculation Logic ---------------------
-    def calculate_angle(self,a, b, c):
-        # a, b, c are (x,y) points: shoulder, elbow, wrist
+    def calculate_angle(self, a, b, c):
+        # a, b, c are (x,y) points
         ab = (a[0]-b[0], a[1]-b[1])
         cb = (c[0]-b[0], c[1]-b[1])
         dot = ab[0]*cb[0] + ab[1]*cb[1]
         mag_ab = math.sqrt(ab[0]**2 + ab[1]**2)
         mag_cb = math.sqrt(cb[0]**2 + cb[1]**2)
-        angle = math.degrees(math.acos(dot/(mag_ab*mag_cb)))
+        
+        if mag_ab == 0 or mag_cb == 0:
+            return 0.0
+            
+        ratio = dot / (mag_ab * mag_cb)
+        ratio = max(-1.0, min(1.0, ratio))
+        angle = math.degrees(math.acos(ratio))
         return angle
 
     # -------------- Bicep Curl Detection Logic -------------------
     def detect_bicep_curl(self, lm, h, w):
-        """Counts the number of Bicep Curl."""
+        """Counts the number of Bicep Curls for either left or right arm."""
         L = self.mp_pose.PoseLandmark
 
-        shoulder = lm[L.RIGHT_SHOULDER]
-        elbow    = lm[L.RIGHT_ELBOW]
-        wrist    = lm[L.RIGHT_WRIST]
+        # Right arm angle
+        r_shoulder = lm[L.RIGHT_SHOULDER]
+        r_elbow    = lm[L.RIGHT_ELBOW]
+        r_wrist    = lm[L.RIGHT_WRIST]
+        r_shoulder_pt = (int(r_shoulder.x * w), int(r_shoulder.y * h))
+        r_elbow_pt    = (int(r_elbow.x * w),    int(r_elbow.y * h))
+        r_wrist_pt    = (int(r_wrist.x * w),    int(r_wrist.y * h))
+        r_angle = self.calculate_angle(r_shoulder_pt, r_elbow_pt, r_wrist_pt)
 
-        shoulder_x, shoulder_y = int(shoulder.x * w), int(shoulder.y * h)
-        ex, ey = int(elbow.x * w),    int(elbow.y * h)
-        wx, wy = int(wrist.x * w),    int(wrist.y * h)
+        # Left arm angle
+        l_shoulder = lm[L.LEFT_SHOULDER]
+        l_elbow    = lm[L.LEFT_ELBOW]
+        l_wrist    = lm[L.LEFT_WRIST]
+        l_shoulder_pt = (int(l_shoulder.x * w), int(l_shoulder.y * h))
+        l_elbow_pt    = (int(l_elbow.x * w),    int(l_elbow.y * h))
+        l_wrist_pt    = (int(l_wrist.x * w),    int(l_wrist.y * h))
+        l_angle = self.calculate_angle(l_shoulder_pt, l_elbow_pt, l_wrist_pt)
 
-        angle = self.calculate_angle((shoulder_x, shoulder_y), (ex, ey), (wx, wy))
+        # Select the active arm (the one with the more bent elbow / smaller angle)
+        if r_angle < 130 or l_angle < 130:
+            angle = min(r_angle, l_angle)
+        else:
+            angle = max(r_angle, l_angle)
 
         # Rep logic
         if self.counter < self.target_reps:
+            print(f"[DEBUG BICEP] R_Angle: {r_angle:.1f}° | L_Angle: {l_angle:.1f}° | Selected Angle: {angle:.1f}° | ready: {self.ready_to_count} | fold: {self.is_fold}")
             if angle > self.BICEP_CURL_UPPER_THRESHOLD and not self.ready_to_count:
                 self.ready_to_count = True
                 self.is_fold = False
@@ -210,37 +249,50 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
    
     # ------------------ Quadriceps Stretch Detection Logic --------------------
     def detect_quadriceps_stretch(self, lm, h, w):
-        """Counts the number of Quadriceps Stretch."""
+        """Counts the number of Quadriceps Stretch for either leg."""
         L = self.mp_pose.PoseLandmark
 
-        # Right leg landmarks (you can mirror for left leg if needed)
-        hip   = lm[L.RIGHT_HIP]
-        knee  = lm[L.RIGHT_KNEE]
-        ankle = lm[L.RIGHT_ANKLE]
+        # Right Leg
+        r_hip   = lm[L.RIGHT_HIP]
+        r_knee  = lm[L.RIGHT_KNEE]
+        r_ankle = lm[L.RIGHT_ANKLE]
+        r_hip_pt   = (int(r_hip.x * w),   int(r_hip.y * h))
+        r_knee_pt  = (int(r_knee.x * w),  int(r_knee.y * h))
+        r_ankle_pt = (int(r_ankle.x * w), int(r_ankle.y * h))
+        r_angle = self.calculate_angle(r_hip_pt, r_knee_pt, r_ankle_pt)
+        # Bending condition: Knee is bent, foot is lifted (ankle is higher than knee, i.e., smaller y coordinate)
+        r_folded = r_angle < self.QUADRICEP_LOWER_THRESHOLD and r_ankle_pt[1] < r_knee_pt[1]
 
-        # Convert normalized coords → pixel coords
-        hx, hy = int(hip.x * w), int(hip.y * h)
-        kx, ky = int(knee.x * w), int(knee.y * h)
-        ax, ay = int(ankle.x * w), int(ankle.y * h)
+        # Left Leg
+        l_hip   = lm[L.LEFT_HIP]
+        l_knee  = lm[L.LEFT_KNEE]
+        l_ankle = lm[L.LEFT_ANKLE]
+        l_hip_pt   = (int(l_hip.x * w),   int(l_hip.y * h))
+        l_knee_pt  = (int(l_knee.x * w),  int(l_knee.y * h))
+        l_ankle_pt = (int(l_ankle.x * w), int(l_ankle.y * h))
+        l_angle = self.calculate_angle(l_hip_pt, l_knee_pt, l_ankle_pt)
+        l_folded = l_angle < self.QUADRICEP_LOWER_THRESHOLD and l_ankle_pt[1] < l_knee_pt[1]
 
-        # Knee angle (hip–knee–ankle)
-        angle = self.calculate_angle((hx, hy), (kx, ky), (ax, ay))
+        # Select the active leg (the one with the smaller angle / more bent)
+        if r_angle < l_angle:
+            angle = r_angle
+            is_folded_now = r_folded
+        else:
+            angle = l_angle
+            is_folded_now = l_folded
 
-        # Detection conditions:
-        # 1. Knee is folded (angle < threshold)
-        # 2. Foot is lifted upward (ankle above knee → ay < ky)
-        # 3. Foot is behind hip (ankle.x < hip.x for right leg, opposite for left)
-        if angle > self.QUADRICEP_UPPER_THRESHOLD and not self.ready_to_count:
-            self.ready_to_count = True
-            self.is_fold = False
-
-        elif angle < self.QUADRICEP_LOWER_THRESHOLD and ay < ky and ax < hx and self.ready_to_count and not self.is_fold:
-            self.is_fold = True
-        
-        elif angle > self.QUADRICEP_UPPER_THRESHOLD and self.ready_to_count and self.is_fold:
-            self.counter += 1
-            self.ready_to_count = False
-            self.is_fold = False
+        # Rep logic
+        if self.counter < self.target_reps:
+            print(f"[DEBUG QUAD] R_Angle: {r_angle:.1f}° | L_Angle: {l_angle:.1f}° | Selected Angle: {angle:.1f}° | ready: {self.ready_to_count} | fold: {self.is_fold}")
+            if angle > self.QUADRICEP_UPPER_THRESHOLD and not self.ready_to_count:
+                self.ready_to_count = True
+                self.is_fold = False
+            elif is_folded_now and self.ready_to_count and not self.is_fold:
+                self.is_fold = True
+            elif angle > self.QUADRICEP_UPPER_THRESHOLD and self.ready_to_count and self.is_fold:
+                self.counter += 1
+                self.ready_to_count = False
+                self.is_fold = False
         else:
             print(f"Target of {self.target_reps} reps reached!")
 
