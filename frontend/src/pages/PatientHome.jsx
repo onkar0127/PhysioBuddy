@@ -81,7 +81,7 @@ export default function PatientHome() {
                   </div>
                   <div>
                     <h3 className="text-base sm:text-lg font-black text-cyan-950 dark:text-gray-100 tracking-tight">My Profile</h3>
-                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">History & Stats</p>
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">Personal Details</p>
                   </div>
                 </Link>
 

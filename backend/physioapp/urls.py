@@ -12,6 +12,7 @@ urlpatterns = [
     # Routes for Doctors
     path('api/doctor/get-name/', views.get_doctor_name),
     path('api/doctor/profile/', views.doctor_profile_api),
+    path('api/doctor/home/', views.doctor_home_api),
     path('api/doctor/update-image/', views.update_doctor_image),
     path('api/patient-status/', views.get_patient_status),
     path('api/doctor/get-my-patients/',views.my_patients),

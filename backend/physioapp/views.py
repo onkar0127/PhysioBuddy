@@ -46,6 +46,41 @@ def logout_api(request):
 
 
 # APIs for Doctors
+
+def doctor_home_api(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    try:
+        curr_doc = DoctorProfile.objects.get(user=request.user)
+    except DoctorProfile.DoesNotExist:
+        return JsonResponse({'error': 'Doctor profile not found'}, status=404)
+
+    patients = PatientProfile.objects.filter(doctor=curr_doc).prefetch_related('assigned_exercises')
+    total_patients = patients.count()
+    completed_patients = 0
+    not_completed_patients = 0
+    today = timezone.now().date()
+
+    for patient in patients:
+        assignments = patient.assigned_exercises.filter(
+            assigned_by=curr_doc,
+            date_assigned__date=today,
+        )
+        if not assignments.exists():
+            continue
+
+        if all(a.is_completed for a in assignments):
+            completed_patients += 1
+        else:
+            not_completed_patients += 1
+
+    return JsonResponse({
+        'total_patients': total_patients,
+        'completed_patients': completed_patients,
+        'not_completed_patients': not_completed_patients,
+    }, status=200)
+
 def doctor_profile_api(request):
     if not request.user.is_authenticated:
         return JsonResponse(

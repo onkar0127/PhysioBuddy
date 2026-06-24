@@ -32,7 +32,6 @@ class DoctorProfile(models.Model):
     hospital_name = models.CharField(max_length=255, blank=True, null=True)
     experience_years = models.IntegerField(max_length=3,null=True, blank=True)
     professional_summary = models.TextField(null=True)
-    additional_info = models.TextField(null=True)
 
 
 

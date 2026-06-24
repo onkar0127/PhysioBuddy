@@ -42,7 +42,7 @@ function HomeContent({ stats, doctorName }) {
         <div className="max-w-5xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-6">
           <StatCard value={stats.total} label="Patients" icon="👥" />
           <StatCard value={stats.completed} label="Completed" icon="✅" />
-          <StatCard value={stats.pending} label="Pending" icon="⏳" />
+          <StatCard value={stats.notCompleted} label="Not Completed" icon="⏳" />
           <StatCard value={`${stats.rate}%`} label="Compliance" icon="📊" />
         </div>
       </section>
@@ -59,7 +59,7 @@ const StatCard = ({ value, label, icon }) => (
 );
 
 export default function DoctorHome() {
-  const [records, setRecords] = useState([]);
+  const [stats, setStats] = useState({ total: 0, completed: 0, notCompleted: 0, rate: 0 });
   const [doctorName, setDoctorName] = useState('');
 
   useEffect(() => {
@@ -68,17 +68,36 @@ export default function DoctorHome() {
         const response = await fetch(`${API_BASE}/api/doctor/get-name/`, { credentials: 'include' });
         const data = await response.json();
         setDoctorName(data.doctor_name || '');
-      } catch (err) { console.error(err); }
+      } catch (err) {
+        console.error(err);
+      }
     };
-    fetchDoctorData();
-  }, []);
 
-  const stats = {
-    total: records.length,
-    completed: records.filter(r => r.status === 'completed').length,
-    pending: records.filter(r => r.status !== 'completed').length,
-    rate: records.length ? Math.round((records.filter(r => r.status === 'completed').length / records.length) * 100) : 0,
-  };
+    const fetchDoctorStats = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/doctor/home/`, { credentials: 'include' });
+        if (!response.ok) {
+          console.error('Failed to load doctor home stats', response.status);
+          return;
+        }
+        const data = await response.json();
+        const total = data.total_patients ?? 0;
+        const completed = data.completed_patients ?? 0;
+        const notCompleted = data.not_completed_patients ?? 0;
+        setStats({
+          total,
+          completed,
+          notCompleted,
+          rate: total ? Math.round((completed / total) * 100) : 0,
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchDoctorData();
+    fetchDoctorStats();
+  }, []);
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-gradient-to-br from-cyan-100 to-blue-100 dark:from-gray-950 dark:to-slate-900 transition-colors duration-500 font-[Inter]">
