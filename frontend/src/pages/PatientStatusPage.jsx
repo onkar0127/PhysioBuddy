@@ -7,11 +7,11 @@ const API_BASE = 'http://127.0.0.1:8000';
 // ── Exercise Chip Component ───────────────────────────────
 const ExerciseChip = ({ exercise, reps, isCompleted }) => {
   const styles = isCompleted
-    ? "bg-emerald-100 border-emerald-600 text-emerald-700"
-    : "bg-red-100 border-red-600 text-red-700";
+    ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-400"
+    : "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/50 text-rose-700 dark:text-rose-400";
 
   return (
-    <div className={`px-4 py-2 rounded-xl font-semibold border-2 ${styles}`}>
+    <div className={`px-3 py-1 rounded-lg text-sm font-medium border ${styles} transition-all duration-300 hover:scale-105 shadow-sm`}>
       {exercise} — {reps} reps
     </div>
   );
@@ -105,19 +105,19 @@ export default function PatientStatusPage2() {
           {error && <div className="text-center p-12 text-red-600 dark:text-red-400 font-bold">{error}</div>}
 
           {/* Patient Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
             {filtered.map((patient, pIdx) => {
               const completed = patient.assigned_exercises.filter(ex => ex.is_completed).length;
               const total = patient.assigned_exercises.length;
               return (
-                <div key={pIdx} className="rounded-2xl shadow-lg border border-gray-500 dark:border-gray-700 bg-white/70 dark:bg-gray-800/70 p-8 min-h-[350px] flex flex-col justify-between">
-                  <h3 className="text-2xl font-bold text-cyan-900 dark:text-white mb-6">👤 {patient.name}</h3>
-                  <div className="flex flex-wrap gap-3 mb-6">
+                <div key={pIdx} className="rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-850/70 p-6 flex flex-col h-auto transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                  <h3 className="text-xl font-bold text-cyan-950 dark:text-white mb-4">👤 {patient.name}</h3>
+                  <div className="flex flex-wrap gap-2 mb-4">
                     {patient.assigned_exercises.map((ex, eIdx) => (
                       <ExerciseChip key={eIdx} exercise={ex.exercise_name} reps={ex.reps} isCompleted={ex.is_completed} />
                     ))}
                   </div>
-                  <p className="text-sm font-bold text-gray-600 dark:text-gray-400">
+                  <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mt-auto pt-2 border-t border-gray-100 dark:border-gray-800">
                     Progress: {completed}/{total} completed
                   </p>
                 </div>
