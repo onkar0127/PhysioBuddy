@@ -7,10 +7,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-5cy+wr0egssd(7g7t35a_$-l&6p!$=6ztwnvysa-#43mhmn_(7'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Set DEBUG to False by default.
+# It will only be True if you explicitly set the environment variable DEBUG to 'True'
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+# This tells Django to use the Render variable if it exists, 
+# otherwise default to your local development list
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 
 
 # Application definition
