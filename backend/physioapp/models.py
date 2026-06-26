@@ -30,7 +30,7 @@ class DoctorProfile(models.Model):
     gender = models.CharField(max_length=10, blank=True, null=True, choices=GENDER_TYPES)
     city = models.CharField(max_length=100, blank=True, null=True)  
     hospital_name = models.CharField(max_length=255, blank=True, null=True)
-    experience_years = models.IntegerField(max_length=3,null=True, blank=True)
+    experience_years = models.IntegerField(null=True, blank=True)
     professional_summary = models.TextField(null=True)
 
 
