@@ -81,7 +81,7 @@ export default function PatientStatusPage2() {
           {/* Quick Stat Tiles */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full mb-8">
             {stats.map(s => (
-              <div key={s.label} className="backdrop-blur-2xl bg-white/40 dark:bg-gray-800/40 border border-white/50 dark:border-gray-700 rounded-2xl p-4 text-center shadow-lg">
+              <div key={s.label} className="backdrop-blur-xl bg-white/50 dark:bg-gray-800/50 border border-white/60 dark:border-gray-700 rounded-2xl p-4 text-center shadow-xl hover:shadow-cyan-900/10 transition-all duration-300">
                 <div className={`mx-auto w-12 h-12 mb-3 rounded-xl flex items-center justify-center ${s.bg}`}>
                   <span className={`text-xl font-black ${s.text}`}>{s.value}</span>
                 </div>
@@ -97,7 +97,7 @@ export default function PatientStatusPage2() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search patient or exercise…"
-              className="w-full px-6 py-4 rounded-2xl bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl border border-white/30 dark:border-gray-700 text-cyan-950 dark:text-gray-100 text-lg font-bold focus:ring-2 focus:ring-cyan-500 outline-none transition"
+              className="w-full px-6 py-4 rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-xl border border-white/60 dark:border-gray-700 text-cyan-950 dark:text-gray-100 text-lg font-bold shadow-lg focus:ring-2 focus:ring-cyan-500 outline-none transition placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
           </div>
 
@@ -110,14 +110,19 @@ export default function PatientStatusPage2() {
               const completed = patient.assigned_exercises.filter(ex => ex.is_completed).length;
               const total = patient.assigned_exercises.length;
               return (
-                <div key={pIdx} className="rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-850/70 p-6 flex flex-col h-auto transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                  <h3 className="text-xl font-bold text-cyan-950 dark:text-white mb-4">👤 {patient.name}</h3>
+                <div key={pIdx} className="group backdrop-blur-xl bg-gradient-to-br from-white/70 via-cyan-50/60 to-blue-50/70 dark:from-gray-800/70 dark:via-gray-800/60 dark:to-slate-900/70 border border-cyan-100/80 dark:border-gray-700 rounded-[1.5rem] p-6 flex flex-col h-full shadow-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-11 h-11 rounded-2xl bg-cyan-100 dark:bg-cyan-900/50 flex items-center justify-center text-xl border border-cyan-200 dark:border-cyan-800 shadow-inner">
+                      👤
+                    </div>
+                    <h3 className="text-xl font-black text-cyan-950 dark:text-white">{patient.name}</h3>
+                  </div>
                   <div className="flex flex-wrap gap-2 mb-4">
                     {patient.assigned_exercises.map((ex, eIdx) => (
                       <ExerciseChip key={eIdx} exercise={ex.exercise_name} reps={ex.reps} isCompleted={ex.is_completed} />
                     ))}
                   </div>
-                  <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mt-auto pt-2 border-t border-gray-100 dark:border-gray-800">
+                  <p className="text-sm font-bold text-gray-600 dark:text-gray-300 mt-auto pt-3 border-t border-cyan-100/80 dark:border-gray-700">
                     Progress: {completed}/{total} completed
                   </p>
                 </div>
