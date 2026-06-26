@@ -26,7 +26,6 @@ function HomeContent({ stats, doctorName }) {
             Manage your patients, assign exercises, and track recovery — all from one elegant workspace.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-            {/* 2. Swapped <a> for <Link to="..."> */}
             <Link to="/patient-status" className="px-10 py-4 text-lg font-bold rounded-2xl text-white bg-cyan-600 shadow-xl shadow-cyan-500/40 hover:bg-cyan-700 transition-all duration-300 hover:scale-105 text-center">
               View Patient Status
             </Link>
