@@ -16,7 +16,7 @@ mediapipe
 numpy==1.26.4
 opencv-contrib-python==4.11.0.86
 opencv-python==4.11.0.86
-scipy==1.15.3
+scipy --only-binary=:all:
 faker
 ml_dtypes>=0.5.1
 protobuf>=4.25.8
