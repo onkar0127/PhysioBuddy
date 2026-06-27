@@ -287,35 +287,17 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
         r_hip_pt   = (int(r_hip.x * w),   int(r_hip.y * h))
         r_knee_pt  = (int(r_knee.x * w),  int(r_knee.y * h))
         r_ankle_pt = (int(r_ankle.x * w), int(r_ankle.y * h))
-        r_angle = self.calculate_angle(r_hip_pt, r_knee_pt, r_ankle_pt)
+        angle = self.calculate_angle(r_hip_pt, r_knee_pt, r_ankle_pt)
         # Bending condition: Knee is bent, foot is lifted (ankle is higher than knee, i.e., smaller y coordinate)
-        r_folded = r_angle < self.QUADRICEP_LOWER_THRESHOLD and r_ankle_pt[1] < r_knee_pt[1]
-
-        # Left Leg
-        l_hip   = lm[L.LEFT_HIP]
-        l_knee  = lm[L.LEFT_KNEE]
-        l_ankle = lm[L.LEFT_ANKLE]
-        l_hip_pt   = (int(l_hip.x * w),   int(l_hip.y * h))
-        l_knee_pt  = (int(l_knee.x * w),  int(l_knee.y * h))
-        l_ankle_pt = (int(l_ankle.x * w), int(l_ankle.y * h))
-        l_angle = self.calculate_angle(l_hip_pt, l_knee_pt, l_ankle_pt)
-        l_folded = l_angle < self.QUADRICEP_LOWER_THRESHOLD and l_ankle_pt[1] < l_knee_pt[1]
-
-        # Select the active leg (the one with the smaller angle / more bent)
-        if r_angle < l_angle:
-            angle = r_angle
-            is_folded_now = r_folded
-        else:
-            angle = l_angle
-            is_folded_now = l_folded
+        is_folded = angle < self.QUADRICEP_LOWER_THRESHOLD and r_ankle_pt[1] < r_knee_pt[1]
 
         # Rep logic
         if self.counter < self.target_reps:
-            print(f"[DEBUG QUAD] R_Angle: {r_angle:.1f}° | L_Angle: {l_angle:.1f}° | Selected Angle: {angle:.1f}° | ready: {self.ready_to_count} | fold: {self.is_fold}")
+            # print(f"[DEBUG QUAD] R_Angle: {angle:.1f}° | L_Angle: {l_angle:.1f}° | Selected Angle: {angle:.1f}° | ready: {self.ready_to_count} | fold: {self.is_fold}")
             if angle > self.QUADRICEP_UPPER_THRESHOLD and not self.ready_to_count:
                 self.ready_to_count = True
                 self.is_fold = False
-            elif is_folded_now and self.ready_to_count and not self.is_fold:
+            elif is_folded and self.ready_to_count and not self.is_fold:
                 self.is_fold = True
             elif angle > self.QUADRICEP_UPPER_THRESHOLD and self.ready_to_count and self.is_fold:
                 self.counter += 1
@@ -418,17 +400,12 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
             return
 
         # ── Pixel coordinates ────────────────────────────────────────────────
-        lhx, lhy = int(left_hip.x   * w), int(left_hip.y   * h)
-        lkx, lky = int(left_knee.x  * w), int(left_knee.y  * h)
-        lax, lay = int(left_ankle.x * w), int(left_ankle.y * h)
-
         rhx, rhy = int(right_hip.x   * w), int(right_hip.y   * h)
         rkx, rky = int(right_knee.x  * w), int(right_knee.y  * h)
         rax, ray = int(right_ankle.x * w), int(right_ankle.y * h)
 
         # ── Knee angles (hip – knee – ankle) ─────────────────────────────────
-        left_angle  = self.calculate_angle((lhx, lhy), (lkx, lky), (lax, lay))
-        right_angle = self.calculate_angle((rhx, rhy), (rkx, rky), (rax, ray))
+        active_angle = self.calculate_angle((rhx, rhy), (rkx, rky), (rax, ray))
 
         # ── Thresholds ───────────────────────────────────────────────────────
         # Leg is "straight / down" when knee angle is large (> 150 °)
@@ -436,10 +413,7 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
         # Knee is "lifted to 90 °" when angle drops below 95 °
         LIFT_THRESHOLD = 95
 
-        # Use whichever leg is actively lifting (smaller angle = more bent)
-        active_angle = min(left_angle, right_angle)
-
-        # ── Rep state machine (mirrors bicep curl / quadriceps logic) ────────
+       # ── Rep state machine (mirrors bicep curl / quadriceps logic) ────────
         # Phase 0 → 1 : both legs straight → ready to count
         if active_angle > STRAIGHT_THRESHOLD and not self.ready_to_count:
             self.ready_to_count = True
