@@ -7,7 +7,6 @@ import CustomerCare from './pages/CustomerCare.jsx';
 import PatientHome from './pages/PatientHome.jsx';
 import P_Profile from './pages/PatientProfile.jsx';
 import ExerciseList from './pages/ExerciseList.jsx';
-import LiveSession from './pages/livesession.jsx';
 import WebStream from './pages/Webstream.jsx';
 
 import D_Profile from './pages/DoctorProfile.jsx';
@@ -35,8 +34,7 @@ function App() {
         <Route path="/patient-profile" element={<P_Profile />} />
         <Route path='/exercise-list' element={<ExerciseList/>}/>
         <Route path='/live' element={<WebStream />}/> {/* This is the old live session page */}
-        <Route path="/live2" element={<LiveSession/>}/> {/* This is the new live session page */}
-
+        
 
         {/* ------------------- Doctor URLs ------------------- */}
         <Route path="/doctor-home" element={<DoctorHome/>}/>

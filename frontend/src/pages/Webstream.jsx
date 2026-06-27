@@ -15,7 +15,6 @@ export default function WebcamStream() {
   const patient_name = searchParams.get("patient_name") || "Patient"; 
 
   const videoRef = useRef(null);
-  const canvasRef = useRef(null);
   const wsRef = useRef(null);
   const poseRef = useRef(null);
   
@@ -39,17 +38,10 @@ export default function WebcamStream() {
       
       poseInstance.onResults((results) => {
         const video = videoRef.current;
-        const canvas = canvasRef.current;
-        if (!video || !canvas) return;
+        if (!video) return;
 
-        const ctx = canvas.getContext("2d");
-        canvas.width = 640;
-        canvas.height = 360;
-        
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        // Send landmarks to backend
+        // Send landmarks to the backend for exercise detection while the visible
+        // stream remains the raw webcam feed for a more real-time display.
         if (results.poseLandmarks) {
           if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
             wsRef.current.send(JSON.stringify({
@@ -59,22 +51,6 @@ export default function WebcamStream() {
               exercise_id: parseInt(exercise_id, 10),
               target: parseInt(target_reps, 10)
             }));
-          }
-
-          // Draw skeleton overlays
-          if (window.drawConnectors && window.drawLandmarks) {
-            try {
-              window.drawConnectors(ctx, results.poseLandmarks, window.POSE_CONNECTIONS, {
-                color: '#00F5C4',
-                lineWidth: 4
-              });
-              window.drawLandmarks(ctx, results.poseLandmarks, {
-                color: '#2979FF',
-                lineWidth: 2
-              });
-            } catch (err) {
-              console.error("Overlay drawing error:", err);
-            }
           }
         }
       });
@@ -238,15 +214,11 @@ export default function WebcamStream() {
             autoPlay
             muted 
             playsInline 
-            style={{ position: "absolute", width: "1px", height: "1px", opacity: 0, pointerEvents: "none" }} 
-          />
-          <canvas 
-            ref={canvasRef} 
             style={{ 
               width: "100%", 
               height: "100%", 
               objectFit: "cover", 
-              transform: "scaleX(-1)", 
+              transform: "scaleX(-1)",
               display: cameraError ? "none" : "block" 
             }} 
           />

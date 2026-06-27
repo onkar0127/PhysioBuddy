@@ -1,10 +1,6 @@
-import base64
-import cv2
-import numpy as np
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 import mediapipe as mp
-import asyncio
 import math
 
 class LandmarkMock:
