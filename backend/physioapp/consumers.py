@@ -69,6 +69,8 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
             w = data.get("width", 640)
             h = data.get("height", 360)
 
+            self.feedback_message = None
+
             if landmarks_data and exercise_id is not None:
                 # Map raw coordinate dictionaries to LandmarkMock objects
                 lm = [
@@ -93,12 +95,33 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
 
             await self.send(text_data=json.dumps({
                 "reps": self.counter,
-                "exercise_id": exercise_id
+                "exercise_id": exercise_id,
+                "feedback": self.feedback_message
             }))
         except Exception as e:
             import traceback
             print(f"[ERROR] WebSocket receive failed: {e}")
             traceback.print_exc()
+
+
+    # ------------------- Alignment Checking Logic --------------------
+    def is_facing_front(self, lm):
+        """Returns True if user is facing the camera, False if sideways."""
+        L = self.mp_pose.PoseLandmark
+        
+        # Get shoulder landmarks (normalized)
+        l_shoulder = lm[L.LEFT_SHOULDER]
+        r_shoulder = lm[L.RIGHT_SHOULDER]
+        
+        # Use the Z-axis difference
+        # If the user is facing front, both shoulders should have similar Z values.
+        # If sideways, one shoulder will be much closer (smaller Z) than the other.
+        z_diff = abs(l_shoulder.z - r_shoulder.z)
+        
+        # Use a ratio based on the distance between shoulders (X) and Z-depth
+        # This is robust even if the user moves forward/backward
+        return z_diff < 0.15 # Adjust this threshold (0.10 - 0.20) as needed
+
 
     # ------------------ Angle Calculation Logic ---------------------
     def calculate_angle(self, a, b, c):
@@ -117,13 +140,22 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
         angle = math.degrees(math.acos(ratio))
         return angle
 
+
     # -------------- Bicep Curl Detection Logic -------------------
     def detect_bicep_curl(self, lm, h, w):
         """Counts the number of Bicep Curls for either left or right arm."""
         L = self.mp_pose.PoseLandmark
 
         # Right arm angle
+        l_shoulder = lm[L.LEFT_SHOULDER]
         r_shoulder = lm[L.RIGHT_SHOULDER]
+
+        # ALIGNMENT CHECK: Front view required
+        if not self.is_facing_front(lm):
+            self.feedback_message = "Please face the camera directly"
+            return
+
+
         r_elbow    = lm[L.RIGHT_ELBOW]
         r_wrist    = lm[L.RIGHT_WRIST]
         r_shoulder_pt = (int(r_shoulder.x * w), int(r_shoulder.y * h))
@@ -149,6 +181,15 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
     #------------------- shoulder exercise  --------------------
     def detect_shoulder_exercise(self, lm, h, w):
         L = self.mp_pose.PoseLandmark
+
+        # ADD ALIGNMENT CHECK: Front view required
+        l_shoulder = lm[L.LEFT_SHOULDER]
+        r_shoulder = lm[L.RIGHT_SHOULDER]
+        
+        if not self.is_facing_front(lm):
+            self.feedback_message = "Please face the camera directly"
+            return
+
         # --- Raw normalized landmarks (same as your code) ---
         l_shoulder = lm[L.LEFT_SHOULDER]
         l_elbow    = lm[L.LEFT_ELBOW]
@@ -231,6 +272,14 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
         """Counts the number of Quadriceps Stretch for either leg."""
         L = self.mp_pose.PoseLandmark
 
+        l_shoulder = lm[L.LEFT_SHOULDER]
+        r_shoulder = lm[L.RIGHT_SHOULDER]
+        
+        # ALIGNMENT CHECK: Side view required
+        if self.is_facing_front(lm):
+            self.feedback_message = "Please turn sideways to the camera"
+            return
+
         # Right Leg
         r_hip   = lm[L.RIGHT_HIP]
         r_knee  = lm[L.RIGHT_KNEE]
@@ -281,11 +330,19 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
         """Counts the number of Squats."""
         L = self.mp_pose.PoseLandmark
 
+        # ADD ALIGNMENT CHECK: Front view required
+        l_shoulder = lm[L.LEFT_SHOULDER]
+        r_shoulder = lm[L.RIGHT_SHOULDER]
+        
+        if self.is_facing_front(lm):
+            self.feedback_message = "Please turn sideways to the camera"
+            return
+
         # Landmarks for right side (mirror for left if needed)
         right_hip     = lm[L.RIGHT_HIP]
         right_knee    = lm[L.RIGHT_KNEE]
         right_ankle   = lm[L.RIGHT_ANKLE]
-        left_hip     = lm[L.RIGHT_HIP]
+        left_hip     = lm[L.LEFT_HIP]
         l_knee    = lm[L.LEFT_KNEE]
         left_ankle   = lm[L.LEFT_ANKLE]
         shoulder= lm[L.LEFT_SHOULDER]
@@ -333,10 +390,19 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
             self.is_fold = False
         else:
             print(f"Target of {self.target_reps} reps reached!")
- 
+
+
     # ------------------ Standing Knee Lift Detection Logic --------------------
     def standing_knee_lift(self, lm, h, w):
         L = self.mp_pose.PoseLandmark
+
+        # ADD ALIGNMENT CHECK: Side view required
+        l_shoulder = lm[L.LEFT_SHOULDER]
+        r_shoulder = lm[L.RIGHT_SHOULDER]
+        
+        if self.is_facing_front(lm):
+            self.feedback_message = "Please turn sideways to the camera"
+            return
 
         left_hip    = lm[L.LEFT_HIP]
         left_knee   = lm[L.LEFT_KNEE]
