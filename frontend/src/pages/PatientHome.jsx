@@ -7,6 +7,32 @@ const API_BASE = 'http://127.0.0.1:8000';
 export default function PatientHome() {
   const [patientName, setPatientName] = useState(''); 
   const [loading, setLoading] = useState(true);
+  const [alert, setAlert] = useState(null); // 1. Added state for alert
+
+  // 2. Added effect to check compliance
+  useEffect(() => {
+    const checkCompliance = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/check-compliance/`, {
+          method: 'GET',
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.skipped && data.message) {
+            setAlert(data.message);
+          }
+        } else {
+          console.warn('Compliance check failed with status:', response.status);
+        }
+      } catch (err) {
+        console.error('Error checking compliance:', err);
+      }
+    };
+
+    checkCompliance();
+  }, []);
 
   useEffect(() => {
     const fetchPatientData = async () => {
@@ -38,9 +64,15 @@ export default function PatientHome() {
       
       <Navbar role="patient" />
 
-      {/* Balanced max-width (3xl) to look great on desktop without stretching */}
       <main className="flex-1 flex flex-col items-center justify-center py-8 sm:py-12 px-4 sm:px-6">
         
+        {/* 3. Placed alert banner here */}
+        {alert && (
+          <div className="w-full max-w-3xl mb-6" style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', padding: '16px', color: '#991b1b', fontWeight: 'bold', borderRadius: '12px' }}>
+            ⚠️ {alert}
+          </div>
+        )}
+
         {loading ? (
            <div className="flex-1 flex items-center justify-center">
              <div className="animate-spin h-10 w-10 border-4 border-cyan-600 border-t-transparent rounded-full"></div>
@@ -48,7 +80,7 @@ export default function PatientHome() {
         ) : (
           <div className="w-full max-w-3xl animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6 sm:space-y-8">
 
-            {/* 1. Hero Section - Fluid Typography */}
+            {/* 1. Hero Section */}
             <div className="text-center space-y-3 mb-6 sm:mb-10">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-cyan-950 dark:text-white tracking-tight leading-tight">
                 Ready to move, <br className="sm:hidden" /> <span className="text-cyan-700 dark:text-cyan-400">{patientName}</span>?
@@ -58,7 +90,7 @@ export default function PatientHome() {
               </p>
             </div>
 
-            {/* 2. Main Action Card - Responsive Padding */}
+            {/* 2. Main Action Card */}
             <div className="backdrop-blur-xl bg-white/40 dark:bg-gray-800/40 border border-white/50 dark:border-gray-700 rounded-[2rem] p-8 sm:p-12 shadow-xl flex flex-col items-center justify-center text-center transform transition-all duration-300 hover:shadow-cyan-900/10">
               <div className="w-16 h-16 sm:w-20 sm:h-20 bg-cyan-100 dark:bg-cyan-900/50 rounded-2xl flex items-center justify-center text-3xl sm:text-4xl mb-6 shadow-inner border border-cyan-200 dark:border-cyan-800">
                 🏃

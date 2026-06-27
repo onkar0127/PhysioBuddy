@@ -454,3 +454,23 @@ def mark_message_read_api(request):
         return JsonResponse({'message': 'Message marked as read'}, status=200)
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    
+
+def check_exercise_compliance(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    today = timezone.now().date()
+    # Find all exercises assigned to this patient for today that are not done
+    pending = AssignedExercise.objects.filter(
+        patient__user_id=request.user.id,
+        date_assigned__date=today,
+        is_completed=False
+    )
+
+    has_pending = pending.exists()
+
+    return JsonResponse({
+        'skipped': has_pending,
+        'message': "You have pending exercises for today!" if has_pending else None
+    })

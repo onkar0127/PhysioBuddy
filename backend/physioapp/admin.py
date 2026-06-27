@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, DoctorProfile, PatientProfile, Exercise, AssignedExercise
+from .models import User, DoctorProfile, PatientProfile, Exercise, AssignedExercise, Message
 from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
 
 admin.site.unregister(User)
@@ -39,3 +39,7 @@ class AssignedExerciseAdmin(admin.ModelAdmin):
         'exercise__name',
         'assigned_by__user__username'
     )
+
+@admin.register(Message)
+class MessageAdmin(admin.ModelAdmin):
+    list_display = ('id', 'patient', 'doctor', 'content', 'is_read', 'created_at')

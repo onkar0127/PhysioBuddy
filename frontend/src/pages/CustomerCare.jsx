@@ -201,7 +201,7 @@ export default function CustomerCare() {
           {/* Quick FAQ Footer */}
           <div className="text-center pt-4">
             <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-              Experiencing a medical emergency? <span className="font-bold text-red-500 dark:text-red-400">Call 911 immediately.</span>
+              Experiencing a medical emergency? <span className="font-bold text-red-500 dark:text-red-400">Call 112 immediately.</span>
             </p>
           </div>
 
