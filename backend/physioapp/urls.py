@@ -23,5 +23,11 @@ urlpatterns = [
     path('api/get-exercise-list/', views.get_exercise_list),
     path('api/patient/update-image/', views.update_patient_image),
     path('api/update-completion/', views.update_completion_status),
+
+    # Message API routes
+    path('api/patient/send-message/', views.send_message_api),
+    path('api/patient/messages/', views.get_patient_messages_api),
+    path('api/doctor/messages/', views.get_doctor_messages_api),
+    path('api/doctor/messages/mark-read/', views.mark_message_read_api),
 ]
 

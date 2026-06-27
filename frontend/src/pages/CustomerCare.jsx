@@ -1,24 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar'; 
 
 const API_BASE = 'http://127.0.0.1:8000';
+
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? decodeURIComponent(match[2]) : '';
+}
 
 export default function CustomerCare() {
   const [formData, setFormData] = useState({ subject: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [messages, setMessages] = useState([]);
+
+  const fetchMessages = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/patient/messages/`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setMessages(data);
+      }
+    } catch (err) {
+      console.error("Failed to load messages", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchMessages();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSuccess(false);
     
-    // Mocking an API call - replace with your actual Django endpoint
-    setTimeout(() => {
+    try {
+      const res = await fetch(`${API_BASE}/api/patient/send-message/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+          subject: formData.subject,
+          message: formData.message
+        })
+      });
+
+      if (res.ok) {
+        setSuccess(true);
+        setFormData({ subject: '', message: '' });
+        fetchMessages();
+        setTimeout(() => setSuccess(false), 3000);
+      } else {
+        const errData = await res.json();
+        alert(errData.error || "Failed to send message.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Connection to backend failed.");
+    } finally {
       setIsSubmitting(false);
-      setSuccess(true);
-      setFormData({ subject: '', message: '' });
-      setTimeout(() => setSuccess(false), 3000);
-    }, 1000);
+    }
   };
 
   const contactMethods = [
@@ -129,6 +174,28 @@ export default function CustomerCare() {
                 </button>
               </div>
             </form>
+          </div>
+
+          {/* 4. Message History */}
+          <div className="backdrop-blur-xl bg-white/40 dark:bg-gray-800/40 border border-white/50 dark:border-gray-700 rounded-3xl p-6 sm:p-8 shadow-md">
+            <h2 className="text-xl font-bold text-cyan-900 dark:text-cyan-400 tracking-tight mb-4">Message History</h2>
+            {messages.length === 0 ? (
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">No message history yet.</p>
+            ) : (
+              <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
+                {messages.map((msg) => (
+                  <div key={msg.id} className="p-4 bg-white/60 dark:bg-gray-900/40 border border-white/30 dark:border-gray-700 rounded-2xl flex flex-col gap-2">
+                    <p className="text-sm font-medium text-cyan-950 dark:text-gray-100 whitespace-pre-line">{msg.content}</p>
+                    <div className="flex justify-between items-center text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">
+                      <span>{new Date(msg.created_at).toLocaleString('en-IN')}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] ${msg.is_read ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400' : 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400'}`}>
+                        {msg.is_read ? 'Read' : 'Sent'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Quick FAQ Footer */}

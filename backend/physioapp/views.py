@@ -2,7 +2,7 @@ import json
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse, Http404
 from django.shortcuts import get_object_or_404
-from .models import PatientProfile, DoctorProfile, AssignedExercise,Exercise
+from .models import PatientProfile, DoctorProfile, AssignedExercise, Exercise, Message
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
@@ -357,3 +357,100 @@ def update_completion_status(request):
         return JsonResponse({'message': 'Completion status updated successfully'})
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+@csrf_exempt
+def send_message_api(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    try:
+        patient = PatientProfile.objects.get(user=request.user)
+    except PatientProfile.DoesNotExist:
+        return JsonResponse({'error': 'Only patients can send messages'}, status=403)
+    
+    if not patient.doctor:
+        return JsonResponse({'error': 'No therapist is currently assigned to your profile.'}, status=400)
+        
+    try:
+        data = json.loads(request.body)
+        subject = data.get('subject')
+        message_text = data.get('message')
+        if not subject or not message_text:
+            return JsonResponse({'error': 'Subject and message are required.'}, status=400)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        
+    content = f"[{subject}] {message_text}"
+    msg = Message.objects.create(
+        patient=patient,
+        doctor=patient.doctor,
+        content=content
+    )
+    return JsonResponse({'message': 'Message sent successfully', 'id': msg.id}, status=200)
+
+
+def get_patient_messages_api(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    try:
+        patient = PatientProfile.objects.get(user=request.user)
+    except PatientProfile.DoesNotExist:
+        return JsonResponse({'error': 'Only patients can view these messages'}, status=403)
+    
+    today = timezone.now().date()
+    messages = Message.objects.filter(patient=patient, created_at__date=today).order_by('created_at')
+    msg_list = []
+    for msg in messages:
+        msg_list.append({
+            'id': msg.id,
+            'content': msg.content,
+            'is_read': msg.is_read,
+            'created_at': msg.created_at.isoformat(),
+        })
+    return JsonResponse(msg_list, safe=False, status=200)
+
+
+def get_doctor_messages_api(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    try:
+        doctor = DoctorProfile.objects.get(user=request.user)
+    except DoctorProfile.DoesNotExist:
+        return JsonResponse({'error': 'Only doctors can view these messages'}, status=403)
+    
+    today = timezone.now().date()
+    messages = Message.objects.filter(doctor=doctor, created_at__date=today).order_by('-created_at')
+    msg_list = []
+    for msg in messages:
+        msg_list.append({
+            'id': msg.id,
+            'patient_name': msg.patient.user.username,
+            'content': msg.content,
+            'is_read': msg.is_read,
+            'created_at': msg.created_at.isoformat(),
+        })
+    return JsonResponse(msg_list, safe=False, status=200)
+
+
+@csrf_exempt
+def mark_message_read_api(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    try:
+        doctor = DoctorProfile.objects.get(user=request.user)
+    except DoctorProfile.DoesNotExist:
+        return JsonResponse({'error': 'Only doctors can perform this action'}, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        message_id = data.get('message_id')
+        msg = get_object_or_404(Message, id=message_id, doctor=doctor)
+        msg.is_read = True
+        msg.save()
+        return JsonResponse({'message': 'Message marked as read'}, status=200)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
