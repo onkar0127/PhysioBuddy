@@ -38,6 +38,7 @@ class DoctorProfile(models.Model):
     def __str__(self):
         return self.user.username
 
+
 class PatientProfile(models.Model):
     """
     Model to store a patient's specific information.
@@ -61,6 +62,7 @@ class PatientProfile(models.Model):
     def __str__(self):
         return self.user.username
 
+
 class Exercise(models.Model):
     """
     Model to define a specific exercise with its details.
@@ -72,6 +74,7 @@ class Exercise(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class AssignedExercise(models.Model):
     """
@@ -101,3 +104,11 @@ class AssignedExercise(models.Model):
 
     def __str__(self):
         return f"{self.patient.user.username}'s assignment of {self.exercise.name}"
+    
+
+class Message(models.Model):
+    patient = models.ForeignKey(PatientProfile, on_delete=models.CASCADE)
+    doctor = models.ForeignKey(DoctorProfile, on_delete=models.CASCADE)
+    content = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
