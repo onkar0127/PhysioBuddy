@@ -133,26 +133,10 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
         r_shoulder_pt = (int(r_shoulder.x * w), int(r_shoulder.y * h))
         r_elbow_pt    = (int(r_elbow.x * w),    int(r_elbow.y * h))
         r_wrist_pt    = (int(r_wrist.x * w),    int(r_wrist.y * h))
-        r_angle = self.calculate_angle(r_shoulder_pt, r_elbow_pt, r_wrist_pt)
-
-        # Left arm angle
-        l_shoulder = lm[L.LEFT_SHOULDER]
-        l_elbow    = lm[L.LEFT_ELBOW]
-        l_wrist    = lm[L.LEFT_WRIST]
-        l_shoulder_pt = (int(l_shoulder.x * w), int(l_shoulder.y * h))
-        l_elbow_pt    = (int(l_elbow.x * w),    int(l_elbow.y * h))
-        l_wrist_pt    = (int(l_wrist.x * w),    int(l_wrist.y * h))
-        l_angle = self.calculate_angle(l_shoulder_pt, l_elbow_pt, l_wrist_pt)
-
-        # Select the active arm (the one with the more bent elbow / smaller angle)
-        if r_angle < 130 or l_angle < 130:
-            angle = min(r_angle, l_angle)
-        else:
-            angle = max(r_angle, l_angle)
+        angle = self.calculate_angle(r_shoulder_pt, r_elbow_pt, r_wrist_pt)
 
         # Rep logic
         if self.counter < self.target_reps:
-            print(f"[DEBUG BICEP] R_Angle: {r_angle:.1f}° | L_Angle: {l_angle:.1f}° | Selected Angle: {angle:.1f}° | ready: {self.ready_to_count} | fold: {self.is_fold}")
             if angle > self.BICEP_CURL_UPPER_THRESHOLD and not self.ready_to_count:
                 self.ready_to_count = True
                 self.is_fold = False
@@ -203,8 +187,7 @@ class ExerciseConsumer(AsyncWebsocketConsumer):
             return
 
         # --- Step 2: Check wrist position relative to shoulder ---
-        # In normalized coords Y increases downward,
-        # so wrist ABOVE shoulder means wrist.y < shoulder.y
+        # In normalized coords Y increases downward, so wrist ABOVE shoulder means wrist.y < shoulder.y
         both_up = (
             l_wrist.y < l_shoulder.y and
             r_wrist.y < r_shoulder.y
