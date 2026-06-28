@@ -9,7 +9,7 @@ SECRET_KEY = 'django-insecure-5cy+wr0egssd(7g7t35a_$-l&6p!$=6ztwnvysa-#43mhmn_(7
 
 # Set DEBUG to False by default.
 # It will only be True if you explicitly set the environment variable DEBUG to 'True'
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = True
 
 # This tells Django to use the Render variable if it exists, 
 # otherwise default to your local development list
