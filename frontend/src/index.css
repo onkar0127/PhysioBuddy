@@ -52,11 +52,7 @@ h1 {
 
 /* Buttons */
 button {
-  @apply rounded-lg border border-transparent px-4 py-2 text-base font-medium cursor-pointer transition;
-  background-color: #1a1a1a;
-}
-button:hover {
-  border-color: #646cff;
+  @apply rounded-lg border border-transparent px-4 py-2 text-base font-medium cursor-pointer transition bg-transparent;
 }
 button:focus,
 button:focus-visible {
@@ -71,8 +67,5 @@ button:focus-visible {
   }
   a:hover {
     color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
   }
 }

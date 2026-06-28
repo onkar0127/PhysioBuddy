@@ -252,7 +252,7 @@ export default function PatientStatusPage2() {
                             disabled={msg.is_read}
                             className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition shadow-md active:scale-95 ${
                               msg.is_read
-                                ? 'bg-gray-150 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed shadow-none'
+                                ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 cursor-not-allowed shadow-none'
                                 : 'bg-cyan-600 text-white hover:bg-cyan-700'
                             }`}
                           >

@@ -32,12 +32,70 @@ const ThemeToggle = ({ theme, toggleTheme }) => (
 );
 
 
+const DashboardMockup = () => (
+    <div className="relative bg-gradient-to-br from-cyan-900 to-slate-900 border border-cyan-500/30 rounded-3xl p-6 shadow-2xl overflow-hidden backdrop-blur-xl w-full h-auto text-left font-[Inter]">
+        <div className="absolute -top-16 -right-16 w-32 h-32 bg-cyan-400/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-16 -left-16 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl" />
+        
+        <div className="flex justify-between items-center pb-4 border-b border-white/10 mb-6">
+            <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-rose-500" />
+                <span className="w-3 h-3 rounded-full bg-amber-500" />
+                <span className="w-3 h-3 rounded-full bg-emerald-500" />
+            </div>
+            <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] text-cyan-400 font-bold uppercase tracking-widest">
+                PhysioBuddy Dashboard
+            </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl flex flex-col gap-1">
+                <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Today's Progress</span>
+                <span className="text-2xl font-black text-white">83%</span>
+                <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mt-2">
+                    <div className="h-full bg-cyan-400 rounded-full" style={{ width: '83%' }} />
+                </div>
+            </div>
+            
+            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl flex flex-col gap-1">
+                <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Assigned Exercises</span>
+                <span className="text-2xl font-black text-cyan-400">3 Prescribed</span>
+                <span className="text-[10px] text-emerald-400 font-semibold mt-2">● 2 completed for today</span>
+            </div>
+        </div>
+
+        <div className="p-4 bg-white/5 border border-white/10 rounded-2xl mt-4 flex flex-col gap-3">
+            <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Joint Angle Consistency</span>
+                <span className="text-xs text-emerald-400 font-bold">Excellent 94%</span>
+            </div>
+            
+            <svg className="w-full h-16" viewBox="0 0 300 80" preserveAspectRatio="none">
+                <path d="M 0 50 Q 30 20 60 40 T 120 10 T 180 50 T 240 25 T 300 35" fill="none" stroke="#22d3ee" strokeWidth="3" strokeLinecap="round" />
+                <path d="M 0 50 Q 30 20 60 40 T 120 10 T 180 50 T 240 25 T 300 35 L 300 80 L 0 80 Z" fill="url(#chartGrad)" opacity="0.1" />
+                <defs>
+                    <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#22d3ee" />
+                        <stop offset="100%" stopColor="#22d3ee" stopOpacity="0" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+    </div>
+);
+
+
 export default function Landingpage() {
     // 1. Initialize state (defaults to 'dark' if nothing is in localStorage)
     const [theme, setTheme] = useState(() => {
         return localStorage.getItem('theme') || 'dark';
     });    
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [faqOpen, setFaqOpen] = useState({});
+
+    const toggleFaq = (index) => {
+        setFaqOpen(prev => ({ ...prev, [index]: !prev[index] }));
+    };
 
     // 2. useEffect watches the 'theme' state. Whenever it changes, it updates the DOM and Storage.
     useEffect(() => {
@@ -103,7 +161,7 @@ export default function Landingpage() {
                         {/* Desktop Navigation Links */}
                         <nav className="hidden md:flex space-x-10">
                             {['features', 'how-it-works', 'about', 'contact'].map(id => (
-                                <a key={id} href={`#${id === 'contact' ? '#' : id}`} className="text-gray-700 dark:text-gray-300 hover:text-cyan-700 dark:hover:text-cyan-500 font-semibold transition duration-200 capitalize">
+                                <a key={id} href={`#${id}`} className="text-gray-700 dark:text-gray-300 hover:text-cyan-700 dark:hover:text-cyan-500 font-semibold transition duration-200 capitalize">
                                     {id.replace('-', ' ')}
                                 </a>
                             ))}
@@ -125,7 +183,7 @@ export default function Landingpage() {
                             <button
                                 onClick={toggleMenu}
                                 aria-label="Open menu"
-                                className="md:hidden p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition duration-300"
+                                className="md:hidden p-2 rounded-full text-gray-700 dark:text-gray-300 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition duration-300"
                             >
                                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
@@ -141,8 +199,8 @@ export default function Landingpage() {
                         {['features', 'how-it-works', 'about', 'contact'].map(id => (
                             <a 
                                 key={`mobile-${id}`}
-                                onClick={() => handleMobileLinkClick(id === 'contact' ? '#' : `#${id}`)} 
-                                href={id === 'contact' ? '#' : `#${id}`}
+                                onClick={() => handleMobileLinkClick(`#${id}`)} 
+                                href={`#${id}`}
                                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-cyan-50 dark:hover:bg-gray-700 capitalize"
                             >
                                 {id.replace('-', ' ')}
@@ -342,16 +400,72 @@ export default function Landingpage() {
                                 </p>
                             </div>
                             <div className="mt-12 lg:mt-0 lg:ml-auto">
-                                <img
-                                    src="https://placehold.co/600x400/0891b2/ffffff?text=Professional+App+Dashboard"
-                                    alt="Screenshot of PhysioBuddy application dashboard showing progress tracking"
-                                    className="rounded-3xl shadow-2xl transition duration-500 hover:shadow-cyan-900/50 w-full h-auto"
-                                    onError={(e) => { 
-                                        e.target.onerror = null; 
-                                        e.target.src = "https://placehold.co/600x400/0891b2/ffffff?text=App+Dashboard+Mockup"; 
-                                    }}
-                                />
+                                <DashboardMockup />
                             </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* FAQ Accordion Section */}
+                <section id="faq" className="py-24 bg-white dark:bg-gray-800 transition-colors duration-500">
+                    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="text-center mb-16">
+                            <h2 className="text-base text-cyan-600 dark:text-cyan-500 font-bold tracking-wide uppercase">
+                                Frequently Asked Questions
+                            </h2>
+                            <p className="mt-2 text-3xl sm:text-4xl font-extrabold tracking-tight text-cyan-900 dark:text-cyan-400">
+                                Got questions? We have answers.
+                            </p>
+                        </div>
+
+                        <div className="space-y-4">
+                            {[
+                                {
+                                    q: "Do I need any special sensor or equipment?",
+                                    a: "No, all you need is a standard webcam-enabled device (such as a laptop, phone, or tablet). Our artificial intelligence tracking runs directly inside your web browser."
+                                },
+                                {
+                                    q: "Is my live video recorded or stored?",
+                                    a: "Never. Your privacy is paramount. All video processing is computed live in your browser and sent dynamically over WebSockets to count your repetitions. We do not store or record any video feeds."
+                                },
+                                {
+                                    q: "How does my therapist monitor my compliance?",
+                                    a: "Every time you complete a prescribed routine, your results are saved in our database. Your therapist has access to a live compliance dashboard to check completed sets, times, and dates."
+                                }
+                            ].map((item, index) => (
+                                <div key={index} className="border-b border-gray-200 dark:border-gray-700 pb-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleFaq(index)}
+                                        className="w-full flex justify-between items-center text-left py-3 focus:outline-none bg-transparent hover:bg-transparent border-none border-transparent p-0 shadow-none"
+                                    >
+                                        <span className="text-lg font-bold text-cyan-950 dark:text-gray-100">{item.q}</span>
+                                        <span className="text-cyan-600 font-black text-xl ml-4">
+                                            {faqOpen[index] ? "−" : "+"}
+                                        </span>
+                                    </button>
+                                    <div className={`transition-all duration-300 overflow-hidden ${faqOpen[index] ? "max-h-40 opacity-100 mt-2" : "max-h-0 opacity-0"}`}>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 font-medium leading-relaxed">{item.a}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* Contact Us Section */}
+                <section id="contact" className="py-16 bg-gray-50 dark:bg-gray-900 transition-colors duration-500 border-t border-gray-150 dark:border-gray-800">
+                    <div className="max-w-4xl mx-auto px-4 text-center">
+                        <h2 className="text-2xl font-black text-cyan-950 dark:text-white tracking-tight mb-2">Get in Touch</h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 font-medium mb-6">
+                            Have questions or need technical support? We're here to help you.
+                        </p>
+                        <div className="flex flex-col sm:flex-row justify-center gap-6 text-sm font-bold text-cyan-800 dark:text-cyan-400">
+                            <span>📞 +1 (800) 123-4567</span>
+                            <span className="hidden sm:inline">|</span>
+                            <span>✉️ support@physiobuddy.com</span>
+                            <span className="hidden sm:inline">|</span>
+                            <span>📍 Mumbai, India</span>
                         </div>
                     </div>
                 </section>
@@ -365,7 +479,7 @@ export default function Landingpage() {
                         Join hundreds of patients finding better results with PhysioBuddy.
                     </p>
                     <button
-                        onClick={() => handleNavigation('/')}
+                        onClick={() => handleNavigation('/login')}
                         className="mt-8 px-10 py-3 text-lg sm:px-12 sm:py-4 sm:text-xl font-bold rounded-full text-white bg-cyan-600 shadow-2xl shadow-cyan-500/50 hover:bg-cyan-700 transition transform hover:scale-105 duration-300 focus:outline-none focus:ring-4 focus:ring-cyan-300 focus:ring-offset-2"
                     >
                         Sign Up Today
