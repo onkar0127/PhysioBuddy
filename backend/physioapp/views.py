@@ -1,10 +1,12 @@
 import json
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.http import JsonResponse, Http404
 from django.shortcuts import get_object_or_404
 from .models import PatientProfile, DoctorProfile, AssignedExercise, Exercise, Message
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+
+User = get_user_model()
 
 # Common API
 def login_api(request):
@@ -12,28 +14,31 @@ def login_api(request):
             # Get the data from JSON body
             try:
                 data = json.loads(request.body)
-                username = data.get('username')
+                email = data.get('email')
                 password = data.get('password')
             except json.JSONDecodeError:
                 return JsonResponse({'error': 'Invalid JSON'}, status=400)
             
             logout(request)
 
-            # Authentication logic goes here...
-            user = authenticate(request, username=username, password=password)
+            if not email or not password:
+                return JsonResponse({'error': 'Email and password are required'}, status=400)
+
+            try:
+                user_obj = User.objects.get(email__iexact=email)
+            except User.DoesNotExist:
+                return JsonResponse({'error': 'Invalid email or password'}, status=404)
+
+            user = authenticate(request, username=user_obj.username, password=password)
             if user is not None:
-                # Login the user
                 login(request, user)
 
-                # Check the user type: doctor or patient
                 if user.is_staff:
-                    # User is a doctor
                     return JsonResponse({'user': 'doctor'}, status=200)
                 else:
-                    # User is a patient
                     return JsonResponse({'user': 'patient'}, status=200)
             else:
-                return JsonResponse({'error': 'User doesn\'t exists'}, status=404)
+                return JsonResponse({'error': 'Invalid email or password'}, status=404)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 

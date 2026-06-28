@@ -24,7 +24,7 @@ import { useNavigate } from "react-router-dom";
 
 
 export default function App() {
-  const [form, setForm] = useState({ username: "", password: "" });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -42,7 +42,7 @@ const handleSubmit = async (e) => {
   setLoading(true);
   setError(null);
 
-  const { username, password } = form;
+    const { email, password } = form;
   const loginUrl = "http://127.0.0.1:8000/api/login/";
 
   try {
@@ -63,7 +63,7 @@ const handleSubmit = async (e) => {
         "Content-Type": "application/json",
         "X-CSRFToken": csrfToken,
       },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ email, password }),
     });
 
     if (response.ok) {
@@ -154,20 +154,20 @@ const handleSubmit = async (e) => {
               {/* Username Input */}
               <div>
                 <label
-                  htmlFor="username"
+                  htmlFor="email"
                   className="block text-sm font-semibold text-cyan-900 mb-2"
                 >
-                  Username
+                  Email
                 </label>
                 <input
-                  id="username"
-                  name="username"
-                  type="text"
+                  id="email"
+                  name="email"
+                  type="email"
                   required
-                  autoComplete="username"
-                  value={form.username}
+                  autoComplete="email"
+                  value={form.email}
                   onChange={handleChange}
-                  placeholder="Enter your username (or 'test')"
+                  placeholder="Enter your email"
                   className="mt-1 block w-full rounded-xl bg-white/70 text-cyan-900 px-4 py-3 placeholder:text-cyan-500 border border-white/50 focus:outline-none focus:ring-4 focus:ring-cyan-300 focus:border-cyan-600 transition duration-150 shadow-inner"
                   disabled={loading}
                 />
