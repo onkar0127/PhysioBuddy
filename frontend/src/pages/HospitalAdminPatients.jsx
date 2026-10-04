@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { API_BASE } from '../config';
 import Navbar from '../Components/Navbar';
 import { Link } from 'react-router-dom';
+import { ensureCsrfToken } from '../csrf';
 
 export default function HospitalAdminPatients() {
   const [patients, setPatients] = useState([]);
@@ -35,8 +36,12 @@ export default function HospitalAdminPatients() {
 
     try {
       setDeletingId(id);
+      const csrfToken = await ensureCsrfToken();
       const res = await fetch(`${API_BASE}/api/hospital-admin/patients/${id}/delete/`, {
         method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken,
+        },
         credentials: 'include',
       });
       if (res.ok) {

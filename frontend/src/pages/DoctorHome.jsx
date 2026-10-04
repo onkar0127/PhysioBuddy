@@ -1,19 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // 1. Added Link import
-import Navbar from '../Components/Navbar'; 
-import pb from "../assets/pb.png";
+import { Link } from 'react-router-dom';
+import Navbar from '../Components/Navbar';
 import { API_BASE } from '../config';
 
 function HomeContent({ stats, doctorName }) {
-  const features = [
-    { icon: '🩺', title: 'Patient Insights', desc: 'Track every patient\'s rehab progress in real time.' },
-    { icon: '📝', title: 'Quick Assignments', desc: 'Create new exercise plans in seconds.' },
-    { icon: '📈', title: 'Outcome Analytics', desc: 'Compliance, recovery rates, and trends at a glance.' },
-    { icon: '💬', title: 'Direct Messaging', desc: 'Stay connected with your patients securely.' },
-    { icon: '🛡️', title: 'HIPAA Compliant', desc: 'All patient data is encrypted end-to-end.' },
-    { icon: '⏱️', title: 'Save Time', desc: 'Automated reminders and progress tracking.' },
-  ];
-
   return (
     <div className="space-y-0">
       <section className="pt-24 pb-28 text-center px-4">

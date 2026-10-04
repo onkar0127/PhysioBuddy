@@ -20,6 +20,27 @@ const getCookie = (name) => {
   return cookieValue;
 };
 
+const ensureCsrfToken = async () => {
+  let csrfToken = getCookie('csrftoken');
+  if (csrfToken) return csrfToken;
+
+  try {
+    const response = await fetch(`${API_BASE}/api/csrf/`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.csrfToken) return data.csrfToken;
+    }
+  } catch (err) {
+    console.warn("CSRF bootstrap warning:", err);
+  }
+
+  return getCookie('csrftoken') || '';
+};
+
 export default function SuperAdminLogin() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -45,14 +66,7 @@ export default function SuperAdminLogin() {
     const loginUrl = `${API_BASE}/api/superadmin/login/`;
 
     try {
-      let csrfToken = getCookie('csrftoken');
-      if (!csrfToken) {
-        await fetch(`${API_BASE}/api/login/`, {
-          method: "GET",
-          credentials: "include",
-        });
-        csrfToken = getCookie('csrftoken');
-      }
+      const csrfToken = await ensureCsrfToken();
 
       const response = await fetch(loginUrl, {
         method: "POST",
@@ -172,43 +186,51 @@ export default function SuperAdminLogin() {
                 className="block w-full rounded-xl bg-gray-800/80 text-white px-4 py-3 placeholder:text-gray-500 border border-purple-500/30 focus:outline-none focus:ring-4 focus:ring-purple-500/40 focus:border-purple-400 transition shadow-inner text-sm"
                 disabled={loading}
               />
+              <div className="flex justify-end mt-2">
+                <Link
+                  to="/super-admin-forgot-password"
+                  className="text-xs font-semibold text-purple-300 hover:text-purple-200 hover:underline transition"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
             </div>
 
-              {/* Terms and Privacy Agreement */}
-              <p className="text-center text-xs text-purple-300/70 leading-relaxed">
-                By accessing the administrative terminal, you agree to PhysioBuddy's{' '}
-                <button
-                  type="button"
-                  onClick={() => openLegal("terms")}
-                  className="text-purple-300 underline font-semibold hover:text-white p-0 m-0 bg-transparent border-0 inline cursor-pointer align-baseline text-xs"
-                >Terms of Service</button>{' '}
-                and acknowledge our{' '}
-                <button
-                  type="button"
-                  onClick={() => openLegal("privacy")}
-                  className="text-purple-300 underline font-semibold hover:text-white p-0 m-0 bg-transparent border-0 inline cursor-pointer align-baseline text-xs"
-                >Privacy Policy</button>.
-              </p>
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex justify-center items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 px-4 py-3.5 text-sm font-black uppercase tracking-wider text-white shadow-lg shadow-purple-600/40 focus:outline-none focus:ring-4 focus:ring-purple-500/50 transition duration-200 disabled:opacity-50 cursor-pointer"
+            >
+              {loading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Verifying Root Access...
+                </>
+              ) : (
+                "Authenticate as Super Admin"
+              )}
+            </button>
 
-              {/* Submit Button */}
+            {/* Terms and Privacy Agreement */}
+            <p className="text-center text-xs text-purple-300/70 leading-relaxed mt-3">
+              By accessing the administrative terminal, you agree to PhysioBuddy's{' '}
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex justify-center items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 px-4 py-3.5 text-sm font-black uppercase tracking-wider text-white shadow-lg shadow-purple-600/40 focus:outline-none focus:ring-4 focus:ring-purple-500/50 transition duration-200 disabled:opacity-50 cursor-pointer"
-              >
-                {loading ? (
-                  <>
-                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Verifying Root Access...
-                  </>
-                ) : (
-                  "Authenticate as Super Admin"
-                )}
-              </button>
-            </form>
+                type="button"
+                onClick={() => openLegal("terms")}
+                className="text-purple-300 underline font-semibold hover:text-white p-0 m-0 bg-transparent border-0 inline cursor-pointer align-baseline text-xs"
+              >Terms of Service</button>{' '}
+              and acknowledge our{' '}
+              <button
+                type="button"
+                onClick={() => openLegal("privacy")}
+                className="text-purple-300 underline font-semibold hover:text-white p-0 m-0 bg-transparent border-0 inline cursor-pointer align-baseline text-xs"
+              >Privacy Policy</button>.
+            </p>
+          </form>
           </div>
         </div>
 

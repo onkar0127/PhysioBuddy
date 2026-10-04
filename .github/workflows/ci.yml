@@ -1,0 +1,95 @@
+name: CI - Code Quality & Build Verification
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend-ci:
+    name: Frontend Quality & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint Code Quality Checks
+        run: npm run lint
+
+      - name: Run Production Build
+        run: npm run build
+        env:
+          VITE_API_URL: http://127.0.0.1:8000
+          VITE_WS_URL: ws://127.0.0.1:8000
+
+  backend-ci:
+    name: Backend Quality & Integrity Checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8
+
+      - name: Verify Python Syntax & Compilation
+        run: python -m compileall physioapp
+
+      - name: Lint with Flake8 (Syntax errors & critical undefined names)
+        run: |
+          # Stop build on Python syntax errors or undefined names
+          python -m flake8 physioapp --count --select=E9,F63,F7,F82 --show-source --statistics
+          # Warning check for complexity and style
+          python -m flake8 physioapp --count --exit-zero --max-complexity=15 --max-line-length=127 --statistics
+
+      - name: Run Django System Checks
+        env:
+          SECRET_KEY: ci-testing-dummy-secret-key-12345
+          DEBUG: "True"
+        run: python manage.py check
+
+      - name: Check for Missing Database Migrations
+        env:
+          SECRET_KEY: ci-testing-dummy-secret-key-12345
+          DEBUG: "True"
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Run Django Test Suite
+        env:
+          SECRET_KEY: ci-testing-dummy-secret-key-12345
+          DEBUG: "True"
+        run: python manage.py test

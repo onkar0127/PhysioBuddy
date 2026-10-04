@@ -137,6 +137,9 @@ class Exercise(models.Model):
         return self.name
 
 
+from django.utils import timezone
+
+
 class AssignedExercise(models.Model):
     """
     Model to track an exercise assigned by a doctor to a patient.
@@ -160,8 +163,8 @@ class AssignedExercise(models.Model):
     )
     target_reps = models.IntegerField()
     is_completed = models.BooleanField(default=False)
-    date_assigned = models.DateTimeField(auto_now_add=True)
-    assigned_time = models.TimeField(auto_now_add=True)
+    date_assigned = models.DateTimeField(default=timezone.now)
+    assigned_time = models.TimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.patient.user.username}'s assignment of {self.exercise.name}"
@@ -170,6 +173,11 @@ class AssignedExercise(models.Model):
 class Message(models.Model):
     patient = models.ForeignKey(PatientProfile, on_delete=models.CASCADE)
     doctor = models.ForeignKey(DoctorProfile, on_delete=models.CASCADE)
+    sender_type = models.CharField(
+        max_length=10, 
+        default='patient', 
+        choices=[('patient', 'Patient'), ('doctor', 'Doctor')]
+    )
     content = models.TextField()
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

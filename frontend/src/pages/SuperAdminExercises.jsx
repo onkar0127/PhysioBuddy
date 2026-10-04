@@ -2,17 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { API_BASE } from '../config';
 import Navbar from '../Components/Navbar';
 import { Link } from 'react-router-dom';
+import { ensureCsrfToken } from '../csrf';
 
+/**
+ * Super Admin Global Exercise Library Page
+ * 
+ * Manages the global repository of physical therapy exercises:
+ * - Searchable catalog by exercise name or description
+ * - "Add New Exercise" shortcut directing to `/super-admin/add-exercise`
+ * - Deletion trigger with confirmation dialog
+ * - Links to video demonstrations and creator attribution
+ */
 export default function SuperAdminExercises() {
   const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [deletingId, setDeletingId] = useState(null);
 
+  // Fetch exercises list on mount
   useEffect(() => {
     fetchExercises();
   }, []);
 
+  /**
+   * Loads all global exercises from Django REST endpoint
+   */
   const fetchExercises = async () => {
     try {
       setLoading(true);
@@ -30,16 +44,26 @@ export default function SuperAdminExercises() {
     }
   };
 
+  /**
+   * Deletes an exercise from the database after confirmation
+   * @param {number} id - Exercise database ID
+   * @param {string} name - Name of exercise for user prompt
+   */
   const handleDelete = async (id, name) => {
     if (!window.confirm(`Are you sure you want to delete exercise '${name}'?`)) return;
 
     try {
       setDeletingId(id);
+      const csrfToken = await ensureCsrfToken();
       const res = await fetch(`${API_BASE}/api/superadmin/exercises/${id}/delete/`, {
         method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken,
+        },
         credentials: 'include',
       });
       if (res.ok) {
+        // Remove deleted exercise from local state
         setExercises(prev => prev.filter(ex => ex.id !== id));
       }
     } catch (err) {
@@ -49,6 +73,7 @@ export default function SuperAdminExercises() {
     }
   };
 
+  // Filter exercises by user search input query
   const filtered = exercises.filter(ex => 
     ex.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     ex.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -56,10 +81,11 @@ export default function SuperAdminExercises() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-cyan-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-slate-900 text-gray-900 dark:text-gray-100 font-[Inter]">
+      {/* Super Admin Navigation */}
       <Navbar role="superadmin" />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
+        {/* Page Header with "Add New Exercise" button */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
@@ -69,6 +95,7 @@ export default function SuperAdminExercises() {
               Super Admin library of physical therapy exercises available for all doctors to assign to patients.
             </p>
           </div>
+          {/* Add Exercise button placed inside the Exercise Library */}
           <Link
             to="/super-admin/add-exercise"
             className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-sm shadow-xl shadow-emerald-500/25 transition flex items-center justify-center gap-2"
@@ -77,7 +104,7 @@ export default function SuperAdminExercises() {
           </Link>
         </div>
 
-        {/* Search */}
+        {/* Live Search Input */}
         <div className="mb-6">
           <input
             type="text"
@@ -88,14 +115,14 @@ export default function SuperAdminExercises() {
           />
         </div>
 
-        {/* Loading */}
+        {/* Loading Spinner */}
         {loading && (
           <div className="flex justify-center items-center py-20">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-500"></div>
           </div>
         )}
 
-        {/* Exercise Cards */}
+        {/* Exercise Cards Grid */}
         {!loading && filtered.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((ex) => (
@@ -108,10 +135,11 @@ export default function SuperAdminExercises() {
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                       {ex.name}
                     </h3>
+                    {/* Delete button */}
                     <button
                       onClick={() => handleDelete(ex.id, ex.name)}
                       disabled={deletingId === ex.id}
-                      className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg text-xs transition"
+                      className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg text-xs transition cursor-pointer"
                       title="Delete Exercise"
                     >
                       🗑️
@@ -145,6 +173,7 @@ export default function SuperAdminExercises() {
           </div>
         )}
 
+        {/* Empty Search Result Fallback */}
         {!loading && filtered.length === 0 && (
           <div className="text-center py-16 backdrop-blur-xl bg-white/50 dark:bg-gray-900/50 rounded-3xl border border-gray-200 dark:border-gray-800">
             <p className="text-gray-500 dark:text-gray-400 text-base">No exercises found.</p>

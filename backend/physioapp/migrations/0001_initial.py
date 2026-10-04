@@ -107,6 +107,7 @@ class Migration(migrations.Migration):
             name='Message',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('sender_type', models.CharField(choices=[('patient', 'Patient'), ('doctor', 'Doctor')], default='patient', max_length=10)),
                 ('content', models.TextField()),
                 ('is_read', models.BooleanField(default=False)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
@@ -120,8 +121,8 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('target_reps', models.IntegerField()),
                 ('is_completed', models.BooleanField(default=False)),
-                ('date_assigned', models.DateTimeField(auto_now_add=True)),
-                ('assigned_time', models.TimeField(auto_now_add=True)),
+                ('date_assigned', models.DateTimeField(default=django.utils.timezone.now)),
+                ('assigned_time', models.TimeField(default=django.utils.timezone.now)),
                 ('assigned_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='assigned_by', to='physioapp.doctorprofile')),
                 ('exercise', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='assignments', to='physioapp.exercise')),
                 ('patient', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='assigned_exercises', to='physioapp.patientprofile')),

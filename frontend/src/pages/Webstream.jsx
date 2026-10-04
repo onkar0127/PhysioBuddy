@@ -271,12 +271,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { API_BASE, WS_BASE } from "../config";
-
-// Helper function to get CSRF token for Django
-function getCookie(name) {
-  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-  return match ? decodeURIComponent(match[2]) : '';
-}
+import { ensureCsrfToken } from "../csrf";
 
 export default function WebcamStream() {
   const searchParams = new URLSearchParams(window.location.search);
@@ -375,8 +370,9 @@ export default function WebcamStream() {
     // 3. Cleanup function when user leaves the page
     return () => {
       if (wsRef.current) wsRef.current.close();
-      if (videoRef.current?.srcObject) {
-        videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      const currentVideo = videoRef.current;
+      if (currentVideo?.srcObject) {
+        currentVideo.srcObject.getTracks().forEach(track => track.stop());
       }
     };
   }, [exercise_id, target_reps]);
@@ -429,11 +425,12 @@ export default function WebcamStream() {
   // --- API Submission & Redirection ---
   const handleDone = async () => {
     try {
+      const csrfToken = await ensureCsrfToken();
       const response = await fetch(`${API_BASE}/api/update-completion/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
+          "X-CSRFToken": csrfToken,
         },
         credentials: "include",
         body: JSON.stringify({

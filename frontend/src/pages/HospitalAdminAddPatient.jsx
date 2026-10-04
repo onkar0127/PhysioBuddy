@@ -3,6 +3,12 @@ import { API_BASE } from '../config';
 import Navbar from '../Components/Navbar';
 import { useNavigate, Link } from 'react-router-dom';
 import LegalModal from '../Components/LegalModal';
+import { ensureCsrfToken } from '../csrf';
+
+const generateTempPassword = (prefix = 'Pat') => {
+  const randomDigits = Math.floor(1000 + Math.random() * 9000);
+  return `${prefix}@${randomDigits}`;
+};
 
 export default function HospitalAdminAddPatient() {
   const [formData, setFormData] = useState({
@@ -11,7 +17,7 @@ export default function HospitalAdminAddPatient() {
     last_name: '',
     username: '',
     email: '',
-    password: '',
+    password: generateTempPassword('Pat'),
     phone_number: '',
     gender: 'male',
     dob: '',
@@ -91,6 +97,10 @@ export default function HospitalAdminAddPatient() {
     setIsUsernameCustom(false);
   };
 
+  const handleRegeneratePassword = () => {
+    setFormData(prev => ({ ...prev, password: generateTempPassword('Pat') }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -98,10 +108,12 @@ export default function HospitalAdminAddPatient() {
     setSuccess(null);
 
     try {
+      const csrfToken = await ensureCsrfToken();
       const res = await fetch(`${API_BASE}/api/hospital-admin/patients/create/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
         },
         credentials: 'include',
         body: JSON.stringify(formData),
@@ -119,7 +131,7 @@ export default function HospitalAdminAddPatient() {
           last_name: '',
           username: '',
           email: '',
-          password: '',
+          password: generateTempPassword('Pat'),
           phone_number: '',
           gender: 'male',
           dob: '',
@@ -241,15 +253,15 @@ export default function HospitalAdminAddPatient() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                  <div className="flex items-center justify-between mb-1 gap-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 whitespace-nowrap">
                       Patient Username *
                     </label>
                     <button
                       type="button"
                       onClick={handleRegenerateUsername}
                       title="Regenerate username automatically from First & Last name"
-                      className="text-[10px] font-semibold text-teal-600 dark:text-teal-400 hover:underline bg-transparent border-0 cursor-pointer p-0"
+                      className="text-[11px] font-semibold text-teal-600 dark:text-teal-400 hover:underline bg-transparent border-0 cursor-pointer p-0 whitespace-nowrap shrink-0"
                     >
                       ⚡ Auto-sync
                     </button>
@@ -261,7 +273,7 @@ export default function HospitalAdminAddPatient() {
                     value={formData.username}
                     onChange={handleChange}
                     placeholder="e.g. michael_scott"
-                    className="w-full rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2.5 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:outline-none text-sm"
+                    className="w-full rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2.5 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:outline-none text-sm font-mono"
                   />
                   <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
                     Auto-generated from First &amp; Last name.
@@ -269,9 +281,11 @@ export default function HospitalAdminAddPatient() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1">
-                    Patient Email *
-                  </label>
+                  <div className="flex items-center justify-between mb-1 min-h-[18px]">
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                      Patient Email *
+                    </label>
+                  </div>
                   <input
                     type="email"
                     name="email"
@@ -281,21 +295,37 @@ export default function HospitalAdminAddPatient() {
                     placeholder="michael.scott@example.com"
                     className="w-full rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2.5 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:outline-none text-sm"
                   />
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
+                    Used for notifications and login.
+                  </p>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1">
-                    Temporary Password *
-                  </label>
+                  <div className="flex items-center justify-between mb-1 gap-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                      Temp Password *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleRegeneratePassword}
+                      title="Generate a new temporary password"
+                      className="text-[11px] font-semibold text-teal-600 dark:text-teal-400 hover:underline bg-transparent border-0 cursor-pointer p-0 whitespace-nowrap shrink-0"
+                    >
+                      🎲 Generate
+                    </button>
+                  </div>
                   <input
-                    type="password"
+                    type="text"
                     name="password"
                     required
                     value={formData.password}
                     onChange={handleChange}
-                    placeholder="Min 6 characters"
-                    className="w-full rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2.5 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:outline-none text-sm"
+                    placeholder="e.g. Pat@1234"
+                    className="w-full rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2.5 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:outline-none text-sm font-mono"
                   />
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
+                    Auto-generated for initial patient login.
+                  </p>
                 </div>
               </div>
             </div>

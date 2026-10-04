@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { API_BASE } from '../config';
 import Navbar from '../Components/Navbar';
 import { Link } from 'react-router-dom';
+import { ensureCsrfToken } from '../csrf';
 
 export default function HospitalAdminProfile() {
   const [profile, setProfile] = useState(null);
@@ -80,10 +81,12 @@ export default function HospitalAdminProfile() {
     setSaving(true);
 
     try {
+      const csrfToken = await ensureCsrfToken();
       const res = await fetch(`${API_BASE}/api/hospital-admin/profile/update/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
         },
         credentials: 'include',
         body: JSON.stringify({

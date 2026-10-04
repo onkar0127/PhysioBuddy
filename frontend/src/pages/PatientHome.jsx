@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from '../Components/Navbar'; 
+import Navbar from '../Components/Navbar';
 import { API_BASE } from '../config';
 
 export default function PatientHome() {
-  const [patientName, setPatientName] = useState(''); 
+  const [patientName, setPatientName] = useState('');
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null); // 1. Added state for alert
 
@@ -37,19 +37,19 @@ export default function PatientHome() {
     const fetchPatientData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API_BASE}/api/patient/profile/`, { 
+        const response = await fetch(`${API_BASE}/api/patient/profile/`, {
           method: 'GET',
-          credentials: 'include' 
+          credentials: 'include'
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           setPatientName(data.patient_name || data.name || 'Patient');
         } else {
-          setPatientName('Patient'); 
+          setPatientName('Patient');
         }
       } catch (err) {
-        setPatientName('Patient'); 
+        setPatientName('Patient');
       } finally {
         setLoading(false);
       }
@@ -60,11 +60,11 @@ export default function PatientHome() {
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-gray-950 dark:to-slate-900 transition-colors duration-500 font-[Inter]">
-      
+
       <Navbar role="patient" />
 
       <main className="flex-1 flex flex-col items-center justify-center py-8 sm:py-12 px-4 sm:px-6">
-        
+
         {/* 3. Placed alert banner here */}
         {alert && (
           <div className="w-full max-w-3xl mb-6" style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', padding: '16px', color: '#991b1b', fontWeight: 'bold', borderRadius: '12px' }}>
@@ -73,9 +73,9 @@ export default function PatientHome() {
         )}
 
         {loading ? (
-           <div className="flex-1 flex items-center justify-center">
-             <div className="animate-spin h-10 w-10 border-4 border-cyan-600 border-t-transparent rounded-full"></div>
-           </div>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="animate-spin h-10 w-10 border-4 border-cyan-600 border-t-transparent rounded-full"></div>
+          </div>
         ) : (
           <div className="w-full max-w-3xl animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6 sm:space-y-8">
 
@@ -98,7 +98,7 @@ export default function PatientHome() {
               <p className="text-sm sm:text-base text-cyan-800 dark:text-cyan-400 font-medium mb-8">
                 Your therapist has updated your exercises.
               </p>
-              
+
               <Link to="/exercise-list" className="inline-block w-full sm:w-auto px-8 py-4 text-sm sm:text-base font-black uppercase tracking-widest rounded-2xl text-white bg-cyan-600 shadow-lg shadow-cyan-600/20 hover:bg-cyan-700 transition-all duration-200 hover:-translate-y-1 active:scale-95">
                 Go to Exercises
               </Link>
@@ -106,25 +106,25 @@ export default function PatientHome() {
 
             {/* 3. Secondary Navigation Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 w-full">
-                <Link to="/patient-profile" className="group backdrop-blur-md bg-white/30 dark:bg-gray-800/30 border border-white/40 dark:border-gray-700 rounded-2xl sm:rounded-3xl p-5 sm:p-6 hover:bg-white/60 dark:hover:bg-gray-700/60 shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-4 sm:gap-5">
-                  <div className="shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-cyan-100 dark:bg-cyan-900/50 flex items-center justify-center text-xl sm:text-2xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 border border-cyan-200 dark:border-cyan-800">
-                    👤
-                  </div>
-                  <div>
-                    <h3 className="text-base sm:text-lg font-black text-cyan-950 dark:text-gray-100 tracking-tight">My Profile</h3>
-                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">Personal Details</p>
-                  </div>
-                </Link>
+              <Link to="/patient-profile" className="group backdrop-blur-md bg-white/30 dark:bg-gray-800/30 border border-white/40 dark:border-gray-700 rounded-2xl sm:rounded-3xl p-5 sm:p-6 hover:bg-white/60 dark:hover:bg-gray-700/60 shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-4 sm:gap-5">
+                <div className="shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-cyan-100 dark:bg-cyan-900/50 flex items-center justify-center text-xl sm:text-2xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 border border-cyan-200 dark:border-cyan-800">
+                  👤
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-cyan-950 dark:text-gray-100 tracking-tight">My Profile</h3>
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">Personal Details</p>
+                </div>
+              </Link>
 
-                <Link to="/customer-care" className="group backdrop-blur-md bg-white/30 dark:bg-gray-800/30 border border-white/40 dark:border-gray-700 rounded-2xl sm:rounded-3xl p-5 sm:p-6 hover:bg-white/60 dark:hover:bg-gray-700/60 shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-4 sm:gap-5">
-                  <div className="shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-xl sm:text-2xl group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300 border border-blue-200 dark:border-blue-800">
-                    💬
-                  </div>
-                  <div>
-                    <h3 className="text-base sm:text-lg font-black text-cyan-950 dark:text-gray-100 tracking-tight">Need Help?</h3>
-                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">Chat with support</p>
-                  </div>
-                </Link>
+              <Link to="/customer-care" className="group backdrop-blur-md bg-white/30 dark:bg-gray-800/30 border border-white/40 dark:border-gray-700 rounded-2xl sm:rounded-3xl p-5 sm:p-6 hover:bg-white/60 dark:hover:bg-gray-700/60 shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-4 sm:gap-5">
+                <div className="shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-xl sm:text-2xl group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300 border border-blue-200 dark:border-blue-800">
+                  💬
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-cyan-950 dark:text-gray-100 tracking-tight">Need Help?</h3>
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">Chat with support</p>
+                </div>
+              </Link>
             </div>
 
           </div>

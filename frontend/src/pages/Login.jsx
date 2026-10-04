@@ -21,6 +21,27 @@ const getCookie = (name) => {
   return cookieValue;
 };
 
+const ensureCsrfToken = async () => {
+  let csrfToken = getCookie('csrftoken');
+  if (csrfToken) return csrfToken;
+
+  try {
+    const response = await fetch(`${API_BASE}/api/csrf/`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.csrfToken) return data.csrfToken;
+    }
+  } catch (err) {
+    console.warn("CSRF bootstrap warning:", err);
+  }
+
+  return getCookie('csrftoken') || '';
+};
+
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -46,14 +67,7 @@ export default function Login() {
     const loginUrl = `${API_BASE}/api/login/`;
 
     try {
-      let csrfToken = getCookie('csrftoken');
-      if (!csrfToken) {
-        await fetch(loginUrl, {
-          method: "GET",
-          credentials: "include",
-        });
-        csrfToken = getCookie('csrftoken');
-      }
+      const csrfToken = await ensureCsrfToken();
 
       const response = await fetch(loginUrl, {
         method: "POST",
@@ -194,23 +208,15 @@ export default function Login() {
                   className="mt-1 block w-full rounded-xl bg-white/80 dark:bg-gray-800/80 text-gray-900 dark:text-white px-4 py-3 placeholder:text-gray-400 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:focus:ring-cyan-800 focus:border-cyan-600 transition shadow-sm"
                   disabled={loading}
                 />
+                <div className="flex justify-end mt-2">
+                  <Link
+                    to="/forgot-password"
+                    className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 hover:underline transition"
+                  >
+                    Forgot Password?
+                  </Link>
+                </div>
               </div>
-
-              {/* Terms and Privacy Agreement */}
-              <p className="text-center text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                By logging in, you agree to PhysioBuddy's{' '}
-                <button
-                  type="button"
-                  onClick={() => openLegal("terms")}
-                  className="text-cyan-600 dark:text-cyan-400 underline font-semibold hover:text-cyan-500 p-0 m-0 bg-transparent border-0 inline cursor-pointer align-baseline text-xs"
-                >Terms of Service</button>{' '}
-                and acknowledge our{' '}
-                <button
-                  type="button"
-                  onClick={() => openLegal("privacy")}
-                  className="text-cyan-600 dark:text-cyan-400 underline font-semibold hover:text-cyan-500 p-0 m-0 bg-transparent border-0 inline cursor-pointer align-baseline text-xs"
-                >Privacy Policy</button>.
-              </p>
 
               {/* Submit Button */}
               <button
@@ -231,6 +237,22 @@ export default function Login() {
                   "Sign In"
                 )}
               </button>
+
+              {/* Terms and Privacy Agreement */}
+              <p className="text-center text-xs text-gray-500 dark:text-gray-400 leading-relaxed mt-3">
+                By logging in, you agree to PhysioBuddy's{' '}
+                <button
+                  type="button"
+                  onClick={() => openLegal("terms")}
+                  className="text-cyan-600 dark:text-cyan-400 underline font-semibold hover:text-cyan-500 p-0 m-0 bg-transparent border-0 inline cursor-pointer align-baseline text-xs"
+                >Terms of Service</button>{' '}
+                and acknowledge our{' '}
+                <button
+                  type="button"
+                  onClick={() => openLegal("privacy")}
+                  className="text-cyan-600 dark:text-cyan-400 underline font-semibold hover:text-cyan-500 p-0 m-0 bg-transparent border-0 inline cursor-pointer align-baseline text-xs"
+                >Privacy Policy</button>.
+              </p>
             </form>
 
             {/* Hospital Registration Callout */}

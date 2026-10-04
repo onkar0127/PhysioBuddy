@@ -211,3 +211,35 @@ else:
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+
+
+# ==========================================
+# Email Configuration (Google Apps SMTP)
+# ==========================================
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() in ('true', '1', 't')
+EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False').lower() in ('true', '1', 't')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get(
+    'DEFAULT_FROM_EMAIL',
+    f"PhysioBuddy <{EMAIL_HOST_USER}>" if EMAIL_HOST_USER else 'PhysioBuddy <no-reply@physiobuddy.com>'
+)
+
+# Frontend URL for link generation in emails (derived dynamically from CORS / CSRF origins / ALLOWED_HOSTS)
+def _derive_frontend_url():
+    candidate_origins = list(CORS_ALLOWED_ORIGINS) + list(CSRF_TRUSTED_ORIGINS)
+    for origin in candidate_origins:
+        # Ignore backend port (8000/8001)
+        if origin and not origin.endswith(':8000') and not origin.endswith(':8001'):
+            return origin.rstrip('/')
+
+    # Fallback to allowed host
+    host = ALLOWED_HOSTS[0] if ALLOWED_HOSTS else 'localhost'
+    protocol = 'http' if (DEBUG or host in ('127.0.0.1', 'localhost')) else 'https'
+    port = ':5173' if DEBUG else ''
+    return f"{protocol}://{host}{port}"
+
+FRONTEND_URL = _derive_frontend_url()

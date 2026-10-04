@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { API_BASE } from '../config';
 import Navbar from '../Components/Navbar';
 import { useNavigate, Link } from 'react-router-dom';
+import { ensureCsrfToken } from '../csrf';
 
 export default function SuperAdminAddExercise() {
   const [formData, setFormData] = useState({
@@ -29,10 +30,12 @@ export default function SuperAdminAddExercise() {
     setSuccess(null);
 
     try {
+      const csrfToken = await ensureCsrfToken();
       const res = await fetch(`${API_BASE}/api/superadmin/exercises/create/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
         },
         credentials: 'include',
         body: JSON.stringify(formData),

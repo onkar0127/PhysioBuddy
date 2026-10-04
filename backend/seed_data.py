@@ -127,6 +127,13 @@ def populate():
             is_user=True
         )
 
+        summaries = [
+            "Experienced orthopedic physiotherapist specializing in musculoskeletal rehabilitation, joint mobility, and post-surgical recovery.",
+            "Sports rehab specialist focused on athletic injury recovery, biomechanics optimization, and return-to-play training.",
+            "Dedicated neurological physiotherapist working with stroke recovery, Parkinson's disease, and balance restoration.",
+            "Pediatric physiotherapist passionate about developmental motor milestones and child neuromuscular wellness.",
+            "Cardiopulmonary rehab expert helping patients restore aerobic capacity and respiratory strength."
+        ]
         doc = DoctorProfile.objects.create(
             user=user,
             hospital=hospital,
@@ -137,7 +144,7 @@ def populate():
             gender=random.choice(['male', 'female']),
             city=hospital.city,
             experience_years=random.randint(3, 18),
-            professional_summary=fake.text(max_nb_chars=180)
+            professional_summary=summaries[i - 1]
         )
         doctors.append(doc)
 

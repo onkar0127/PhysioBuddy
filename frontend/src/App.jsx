@@ -2,16 +2,19 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import Landingpage from './pages/Landingpage.jsx';
 import Login from './pages/Login.jsx';
+import ForgotPassword from './pages/ForgotPassword.jsx';
 import CustomerCare from './pages/CustomerCare.jsx';
 import RegisterHospital from './pages/RegisterHospital.jsx';
 
 
 // Super Admin Pages
 import SuperAdminLogin from './pages/SuperAdminLogin.jsx';
+import SuperAdminForgotPassword from './pages/SuperAdminForgotPassword.jsx';
 import SuperAdminDashboard from './pages/SuperAdminDashboard.jsx';
 import SuperAdminHospitals from './pages/SuperAdminHospitals.jsx';
 import SuperAdminExercises from './pages/SuperAdminExercises.jsx';
 import SuperAdminAddExercise from './pages/SuperAdminAddExercise.jsx';
+import SuperAdminSystemStatus from './pages/SuperAdminSystemStatus.jsx';
 
 // Hospital Admin Pages
 import HospitalAdminDashboard from './pages/HospitalAdminDashboard.jsx';
@@ -40,15 +43,18 @@ function App() {
         {/* ------------------- Common URLs ------------------- */}
         <Route path="/" element={<Landingpage />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/register-hospital" element={<RegisterHospital />} />
         <Route path="/customer-care" element={<CustomerCare />} />
 
         {/* ------------------- Super Admin URLs ------------------- */}
         <Route path="/super-admin-login" element={<SuperAdminLogin />} />
+        <Route path="/super-admin-forgot-password" element={<SuperAdminForgotPassword />} />
         <Route path="/super-admin" element={<SuperAdminDashboard />} />
         <Route path="/super-admin/hospitals" element={<SuperAdminHospitals />} />
         <Route path="/super-admin/exercises" element={<SuperAdminExercises />} />
         <Route path="/super-admin/add-exercise" element={<SuperAdminAddExercise />} />
+        <Route path="/super-admin/status" element={<SuperAdminSystemStatus />} />
 
         {/* ------------------- Hospital Admin URLs ------------------- */}
         <Route path="/hospital-admin" element={<HospitalAdminDashboard />} />
@@ -67,7 +73,7 @@ function App() {
         {/* ------------------- Doctor URLs ------------------- */}
         <Route path="/doctor-home" element={<DoctorHome />} />
         <Route path="/patient-status" element={<PatientStatusPage />} />
-        <Route path="/new-assignment" element={<NewAssignmentForm onCreated={() => {}} />} />
+        <Route path="/new-assignment" element={<NewAssignmentForm onCreated={() => { }} />} />
         <Route path="/doctor-profile" element={<D_Profile />} />
       </Routes>
     </BrowserRouter>

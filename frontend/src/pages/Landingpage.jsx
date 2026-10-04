@@ -144,22 +144,22 @@ export default function Landingpage() {
                     <div className="flex justify-between items-center h-20">
                         {/* Logo */}
                         {/* Logo */}
-                    <div className="flex-shrink-0">
-                        <a href="/" aria-label="PhysioBuddy Home" className="flex items-center">
-                            {/* Light Mode Logo */}
-                            <img
-                                src={pb}
-                                alt="PhysioBuddy Logo"
-                                className="h-14 md:h-14 transition duration-500 dark:hidden"
-                            />
-                            {/* Dark Mode Logo */}
-                            <img
-                                src={pb}
-                                alt="PhysioBuddy Logo (Dark Mode)"
-                                className="h-14 md:h-14 transition duration-500 hidden dark:block"
-                            />
-                        </a>
-                    </div>
+                        <div className="flex-shrink-0">
+                            <a href="/" aria-label="PhysioBuddy Home" className="flex items-center">
+                                {/* Light Mode Logo */}
+                                <img
+                                    src={pb}
+                                    alt="PhysioBuddy Logo"
+                                    className="h-14 md:h-14 transition duration-500 dark:hidden"
+                                />
+                                {/* Dark Mode Logo */}
+                                <img
+                                    src={pb}
+                                    alt="PhysioBuddy Logo (Dark Mode)"
+                                    className="h-14 md:h-14 transition duration-500 hidden dark:block"
+                                />
+                            </a>
+                        </div>
 
                         {/* Desktop Navigation Links */}
                         <nav className="hidden md:flex space-x-10">
@@ -327,7 +327,7 @@ export default function Landingpage() {
                             {/* Horizontal line connector (hidden on mobile) */}
                             <div className="hidden lg:block absolute inset-0 h-1/2 w-full mt-24">
                                 <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                                    <line x1="10" y1="50" x2="90" y2="50" stroke="#0e7490" strokeWidth="2" strokeDasharray="4 8" className="dark:stroke-cyan-500 opacity-50"/>
+                                    <line x1="10" y1="50" x2="90" y2="50" stroke="#0e7490" strokeWidth="2" strokeDasharray="4 8" className="dark:stroke-cyan-500 opacity-50" />
                                 </svg>
                             </div>
 
@@ -508,15 +508,161 @@ export default function Landingpage() {
                 </section>
             </main>
 
-            {/* 8. Footer */}
-            <footer className="bg-gray-800 dark:bg-gray-950 text-white py-10 transition-colors duration-500">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
-                    <p>&copy; {new Date().getFullYear()} PhysioBuddy. All rights reserved.</p>
-                    <div className="mt-4 flex flex-wrap justify-center items-center gap-6 text-xs sm:text-sm">
-                        <button onClick={() => setLegalModal({ open: true, type: 'privacy' })} className="text-gray-400 hover:text-cyan-400 transition underline underline-offset-4 cursor-pointer bg-transparent border-none">Privacy Policy</button>
-                        <span className="text-gray-600">•</span>
-                        <button onClick={() => setLegalModal({ open: true, type: 'terms' })} className="text-gray-400 hover:text-cyan-400 transition underline underline-offset-4 cursor-pointer bg-transparent border-none">Terms of Service</button>
+            {/* 8. Upgraded Multi-Column Modern Footer */}
+            <footer className="bg-slate-900 dark:bg-gray-950 text-white pt-12 sm:pt-16 pb-10 sm:pb-12 border-t border-slate-800 transition-colors duration-500 font-[Inter]">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+                    {/* Top Grid: 2-column on mobile, 4-column on desktop */}
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-12 gap-8 sm:gap-10 pb-10 sm:pb-12 border-b border-slate-800">
+
+                        {/* Col 1: Brand, Tagline, & Status (full width on mobile, 4 cols on lg) */}
+                        <div className="col-span-2 lg:col-span-4 space-y-3 sm:space-y-4">
+                            <div className="flex items-center gap-3">
+                                <img
+                                    src={pb}
+                                    alt="PhysioBuddy Logo"
+                                    className="h-10 w-auto brightness-125 contrast-125"
+                                />
+                                <span className="text-xl font-black text-white tracking-tight">PhysioBuddy</span>
+                            </div>
+
+                            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-sm">
+                                Empowering physical rehabilitation through real-time AI posture tracking, custom multi-day regimens, and direct patient-clinician connectivity.
+                            </p>
+
+                            {/* System Telemetry & Status Pill */}
+                            <div className="pt-1">
+                                <Link
+                                    to="/super-admin-login"
+                                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/90 border border-slate-700/80 text-[10px] sm:text-[11px] font-semibold text-slate-300 hover:text-white hover:border-cyan-500/50 transition no-underline shadow-xs max-w-full"
+                                >
+                                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                                    <span className="truncate">All Systems Operational · AI Pose Engine</span>
+                                </Link>
+                            </div>
+                        </div>
+
+                        {/* Col 2: Navigation (1 col on mobile, 2 cols on lg) */}
+                        <div className="col-span-1 lg:col-span-2 space-y-3">
+                            <h4 className="text-xs font-black uppercase tracking-wider text-cyan-400">
+                                Navigation
+                            </h4>
+                            <ul className="space-y-2 text-xs sm:text-sm">
+                                <li>
+                                    <a href="#features" className="text-slate-400 hover:text-white transition inline-block">Features</a>
+                                </li>
+                                <li>
+                                    <a href="#how-it-works" className="text-slate-400 hover:text-white transition inline-block">How It Works</a>
+                                </li>
+                                <li>
+                                    <a href="#testimonials" className="text-slate-400 hover:text-white transition inline-block">Patient Stories</a>
+                                </li>
+                                <li>
+                                    <a href="#about" className="text-slate-400 hover:text-white transition inline-block">About Us</a>
+                                </li>
+                                <li>
+                                    <a href="#faq" className="text-slate-400 hover:text-white transition inline-block">FAQs</a>
+                                </li>
+                                <li>
+                                    <a href="#contact" className="text-slate-400 hover:text-white transition inline-block">Contact</a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        {/* Col 3: Access & Portals (1 col on mobile, 3 cols on lg) */}
+                        <div className="col-span-1 lg:col-span-3 space-y-3">
+                            <h4 className="text-xs font-black uppercase tracking-wider text-cyan-400">
+                                Access & Portals
+                            </h4>
+                            <ul className="space-y-2.5 text-xs sm:text-sm">
+                                <li>
+                                    <Link to="/login" className="text-slate-400 hover:text-white hover:translate-x-0.5 transition-all duration-200 inline-block no-underline">
+                                        Patient Portal
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link to="/login" className="text-slate-400 hover:text-white hover:translate-x-0.5 transition-all duration-200 inline-block no-underline">
+                                        Doctor Workspace
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link to="/login" className="text-slate-400 hover:text-white hover:translate-x-0.5 transition-all duration-200 inline-block no-underline">
+                                        Hospital Admin
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link to="/register-hospital" className="text-slate-400 hover:text-cyan-400 font-semibold hover:translate-x-0.5 transition-all duration-200 inline-block no-underline">
+                                        Register Hospital
+                                    </Link>
+                                </li>
+                                <li className="pt-1.5 border-t border-slate-800/80">
+                                    <Link to="/super-admin-login" className="text-slate-500 hover:text-slate-300 text-xs transition no-underline">
+                                        Super Admin
+                                    </Link>
+                                </li>
+                            </ul>
+                        </div>
+
+                        {/* Col 4: Contact & Clinical Advisory (full width on mobile, 3 cols on lg) */}
+                        <div className="col-span-2 lg:col-span-3 space-y-3 pt-2 lg:pt-0">
+                            <h4 className="text-xs font-black uppercase tracking-wider text-cyan-400">
+                                Clinical Support
+                            </h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-2.5 text-xs sm:text-sm text-slate-400">
+                                <p>
+                                    <span className="text-slate-500 block text-[10px] sm:text-[11px] uppercase font-bold tracking-wider">Email</span>
+                                    <a href="mailto:support@physiobuddy.com" className="hover:text-white transition break-all">support@physiobuddy.com</a>
+                                </p>
+                                <p>
+                                    <span className="text-slate-500 block text-[10px] sm:text-[11px] uppercase font-bold tracking-wider">Phone</span>
+                                    <a href="tel:+18001234567" className="hover:text-white transition">+1 (800) 123-4567</a>
+                                </p>
+                                <p>
+                                    <span className="text-slate-500 block text-[10px] sm:text-[11px] uppercase font-bold tracking-wider">Location</span>
+                                    <span>Mumbai, Maharashtra, India</span>
+                                </p>
+                            </div>
+
+                            {/* Medical Emergency Disclaimer Box */}
+                            <div className="p-3 rounded-2xl bg-slate-800/60 border border-slate-700/60 text-[11px] text-slate-400 leading-relaxed mt-2">
+                                <span className="font-bold text-amber-400">Medical Notice:</span> For acute emergencies, call <strong>112 / 911</strong> immediately.
+                            </div>
+                        </div>
+
                     </div>
+
+                    {/* Bottom Bar: Copyright & Legal Policies */}
+                    <div className="pt-6 sm:pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 text-center sm:text-left">
+                        <p>
+                            &copy; {new Date().getFullYear()} <strong className="text-slate-400">PhysioBuddy</strong>. All rights reserved.
+                        </p>
+
+                        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6">
+                            <button
+                                type="button"
+                                onClick={() => setLegalModal({ open: true, type: 'privacy' })}
+                                className="text-slate-400 hover:text-cyan-400 transition cursor-pointer bg-transparent border-none p-0"
+                            >
+                                Privacy Policy
+                            </button>
+                            <span>•</span>
+                            <button
+                                type="button"
+                                onClick={() => setLegalModal({ open: true, type: 'terms' })}
+                                className="text-slate-400 hover:text-cyan-400 transition cursor-pointer bg-transparent border-none p-0"
+                            >
+                                Terms of Service
+                            </button>
+                            <span>•</span>
+                            <a
+                                href="#contact"
+                                className="text-slate-400 hover:text-cyan-400 transition no-underline"
+                            >
+                                Help & Support
+                            </a>
+                        </div>
+                    </div>
+
                 </div>
             </footer>
 
