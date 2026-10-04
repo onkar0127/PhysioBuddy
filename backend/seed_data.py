@@ -1,27 +1,65 @@
 import os
+import sys
 import django
 import random
 from faker import Faker
+
+if sys.platform.startswith('win'):
+    sys.stdout.reconfigure(encoding='utf-8')
 
 # 1. Setup Django environment
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'physioapp.settings')
 django.setup()
 
-from django.contrib.auth.models import User
-from physioapp.models import DoctorProfile, PatientProfile, Exercise, AssignedExercise
+from django.contrib.auth import get_user_model
+from physioapp.models import Hospital, DoctorProfile, PatientProfile, Exercise, AssignedExercise, Message
 
-fake = Faker('en_IN')  # Indian locale for realistic data
+User = get_user_model()
+fake = Faker('en_IN')
 
 def populate():
-    print("Clearing old data and starting population...")
+    print("Clearing old data and starting fresh population...")
     AssignedExercise.objects.all().delete()
+    Message.objects.all().delete()
     PatientProfile.objects.all().delete()
     DoctorProfile.objects.all().delete()
+    Hospital.objects.all().delete()
     Exercise.objects.all().delete()
     User.objects.all().delete()
 
-    # 2. Create Core Exercises
-    print("Creating core exercises...")
+    # 1. Create Super Admin
+    print("Creating Super Admin...")
+    super_admin = User.objects.create_superuser(
+        username="superadmin",
+        email="superadmin@physiobuddy.com",
+        password="password123"
+    )
+    print("  -> Super Admin created: superadmin@physiobuddy.com (password123)")
+
+    # 2. Create Hospital and Hospital Admin
+    print("Creating Hospital & Hospital Admin...")
+    hospital_admin_user = User.objects.create_user(
+        username="hospitaladmin",
+        email="hospitaladmin@physiobuddy.com",
+        password="password123",
+        is_staff=True,
+        is_hospital_admin=True,
+        is_user=True
+    )
+
+    hospital = Hospital.objects.create(
+        name="CityCare Physiotherapy & Rehabilitation Center",
+        admin=hospital_admin_user,
+        address="Plot 42, Health City Avenue, Medical District",
+        city="Mumbai",
+        phone_number="+91 22 5550 1234",
+        email="contact@citycarephysio.com"
+    )
+    print(f"  -> Hospital created: '{hospital.name}'")
+    print("  -> Hospital Admin created: hospitaladmin@physiobuddy.com (password123)")
+
+    # 3. Create Core Exercises (Created by Super Admin)
+    print("Creating core exercise library...")
     exercises_data = [
         {
             "id": 1,
@@ -67,54 +105,97 @@ def populate():
             name=ex_data["name"],
             description=ex_data["description"],
             demo_video_url=ex_data["demo_video_url"],
-            thumbnail_image_url=ex_data["thumbnail_image_url"]
+            thumbnail_image_url=ex_data["thumbnail_image_url"],
+            created_by=super_admin
         )
         exercises.append(ex)
 
-    # 3. Create Doctors
-    print("Creating doctors...")
-    specialities = ['Orthopedic', 'General Physio', 'Sports Specialist', 'Neurological Physio']
+    # 4. Create Doctors (Linked to the Hospital)
+    print("Creating doctors and linking them to hospital...")
+    specialities = ['Orthopedic Physiotherapy', 'Sports Rehab Specialist', 'Neurological Physiotherapy', 'Pediatric Physio', 'Cardiopulmonary Physio']
     doctors = []
-    
+
     for i in range(1, 6):
         username = f"doctor{i}"
         email = f"doctor{i}@example.com"
-        user = User.objects.create_user(username=username, email=email, password='password123')
-        user.is_staff = True
-        user.save()
-        
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password='password123',
+            is_staff=True,
+            is_hospital_admin=False,
+            is_user=True
+        )
+
         doc = DoctorProfile.objects.create(
             user=user,
+            hospital=hospital,
+            hospital_name=hospital.name,
             qualification="BPT, MPT",
-            speciality=random.choice(specialities),
+            speciality=specialities[i - 1],
             phone_number=fake.phone_number(),
             gender=random.choice(['male', 'female']),
-            city=fake.city(),
-            hospital_name=fake.company(),
-            experience_years=random.randint(2, 20),
-            professional_summary=fake.text(max_nb_chars=200)
+            city=hospital.city,
+            experience_years=random.randint(3, 18),
+            professional_summary=fake.text(max_nb_chars=180)
         )
         doctors.append(doc)
 
-    # 4. Create Patients
-    print("Creating patients...")
+    # 5. Create Patients (Linked to the Hospital & Assigned to Doctors)
+    print("Creating patients and linking them to hospital and doctors...")
+    patients = []
     for i in range(1, 16):
         username = f"patient{i}"
         email = f"patient{i}@example.com"
-        user = User.objects.create_user(username=username, email=email, password='password123')
-        
-        PatientProfile.objects.create(
-            user=user,
-            date_of_birth=fake.date_of_birth(minimum_age=18, maximum_age=80),
-            gender=random.choice(['male', 'female']),
-            height=random.randint(150, 190),
-            weight=random.randint(45, 100),
-            blood_group=random.choice(['A+', 'B+', 'O+', 'AB+']),
-            phone_number=fake.phone_number(),
-            doctor=random.choice(doctors) # Assign to one of the doctors created above
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password='password123',
+            is_staff=False,
+            is_hospital_admin=False,
+            is_user=True
         )
-            
-    print(f"Database populated successfully with {len(exercises)} Exercises, {len(doctors)} Doctors, and 15 Patients!")
+        assigned_doc = doctors[(i - 1) % len(doctors)]
+
+        pat = PatientProfile.objects.create(
+            user=user,
+            hospital=hospital,
+            doctor=assigned_doc,
+            date_of_birth=fake.date_of_birth(minimum_age=18, maximum_age=75),
+            gender=random.choice(['male', 'female']),
+            height=random.randint(155, 188),
+            weight=random.randint(50, 95),
+            blood_group=random.choice(['A+', 'B+', 'O+', 'AB+']),
+            phone_number=fake.phone_number()
+        )
+        patients.append(pat)
+
+    # 6. Create Sample Exercise Assignments
+    print("Creating sample exercise assignments...")
+    for pat in patients:
+        sampled_exercises = random.sample(exercises, 2)
+        for ex in sampled_exercises:
+            AssignedExercise.objects.create(
+                patient=pat,
+                exercise=ex,
+                assigned_by=pat.doctor,
+                target_reps=random.choice([10, 12, 15]),
+                is_completed=random.choice([True, False])
+            )
+
+    print("\n=======================================================")
+    print("  SEED DATA POPULATED SUCCESSFULLY!")
+    print("=======================================================")
+    print(f"  Hospital: {hospital.name}")
+    print(f"  Doctors: {len(doctors)} (All linked to '{hospital.name}')")
+    print(f"  Patients: {len(patients)} (All linked to '{hospital.name}')")
+    print(f"  Exercises: {len(exercises)} (Created in Global Library)")
+    print("\n  Ready Login Credentials (password for all is 'password123'):")
+    print("  1. Super Admin:      superadmin@physiobuddy.com (or username 'superadmin')")
+    print("  2. Hospital Admin:   hospitaladmin@physiobuddy.com (or username 'hospitaladmin')")
+    print("  3. Doctor:           doctor1@example.com (or username 'doctor1')")
+    print("  4. Patient:          patient1@example.com (or username 'patient1')")
+    print("=======================================================\n")
 
 if __name__ == "__main__":
     populate()

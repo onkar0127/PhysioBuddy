@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import LegalModal from '../Components/LegalModal';
 import pb from "../assets/pb.png";
 
 // Utility Component: Inline SVG Icon for features
@@ -36,7 +38,7 @@ const DashboardMockup = () => (
     <div className="relative bg-gradient-to-br from-cyan-900 to-slate-900 border border-cyan-500/30 rounded-3xl p-6 shadow-2xl overflow-hidden backdrop-blur-xl w-full h-auto text-left font-[Inter]">
         <div className="absolute -top-16 -right-16 w-32 h-32 bg-cyan-400/20 rounded-full blur-3xl" />
         <div className="absolute -bottom-16 -left-16 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl" />
-        
+
         <div className="flex justify-between items-center pb-4 border-b border-white/10 mb-6">
             <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-rose-500" />
@@ -56,7 +58,7 @@ const DashboardMockup = () => (
                     <div className="h-full bg-cyan-400 rounded-full" style={{ width: '83%' }} />
                 </div>
             </div>
-            
+
             <div className="p-4 bg-white/5 border border-white/10 rounded-2xl flex flex-col gap-1">
                 <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Assigned Exercises</span>
                 <span className="text-2xl font-black text-cyan-400">3 Prescribed</span>
@@ -69,7 +71,7 @@ const DashboardMockup = () => (
                 <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Joint Angle Consistency</span>
                 <span className="text-xs text-emerald-400 font-bold">Excellent 94%</span>
             </div>
-            
+
             <svg className="w-full h-16" viewBox="0 0 300 80" preserveAspectRatio="none">
                 <path d="M 0 50 Q 30 20 60 40 T 120 10 T 180 50 T 240 25 T 300 35" fill="none" stroke="#22d3ee" strokeWidth="3" strokeLinecap="round" />
                 <path d="M 0 50 Q 30 20 60 40 T 120 10 T 180 50 T 240 25 T 300 35 L 300 80 L 0 80 Z" fill="url(#chartGrad)" opacity="0.1" />
@@ -89,9 +91,10 @@ export default function Landingpage() {
     // 1. Initialize state (defaults to 'dark' if nothing is in localStorage)
     const [theme, setTheme] = useState(() => {
         return localStorage.getItem('theme') || 'dark';
-    });    
+    });
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [faqOpen, setFaqOpen] = useState({});
+    const [legalModal, setLegalModal] = useState({ open: false, type: 'privacy' });
 
     const toggleFaq = (index) => {
         setFaqOpen(prev => ({ ...prev, [index]: !prev[index] }));
@@ -121,12 +124,12 @@ export default function Landingpage() {
 
     const handleNavigation = (path) => {
         console.log(`Navigating to: ${path}`);
-        window.location.href = path; 
+        window.location.href = path;
     };
 
     const handleMobileLinkClick = (path) => {
         setIsMenuOpen(false);
-        setTimeout(() => handleNavigation(path), 100); 
+        setTimeout(() => handleNavigation(path), 100);
     };
 
     // ... (rest of your return statement stays exactly the same)
@@ -134,7 +137,7 @@ export default function Landingpage() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-[Inter] transition-colors duration-500">
-            
+
             {/* 1. Header Navigation - Theme aware */}
             <header className="sticky top-0 z-20 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm shadow-xl transition-colors duration-500">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -147,7 +150,7 @@ export default function Landingpage() {
                             <img
                                 src={pb}
                                 alt="PhysioBuddy Logo"
-                                className="h-14 md:h-14 transition duration-500 dark:hidden" 
+                                className="h-14 md:h-14 transition duration-500 dark:hidden"
                             />
                             {/* Dark Mode Logo */}
                             <img
@@ -168,15 +171,21 @@ export default function Landingpage() {
                         </nav>
 
                         {/* Action Buttons (Login/Start + Theme Toggle + Mobile Menu Button) */}
-                        <div className="flex items-center space-x-2 sm:space-x-4"> {/* 🚀 FIX: Use space-x for consistent spacing */}
-                            
+                        <div className="flex items-center space-x-2 sm:space-x-3">
                             <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
-                            
+
                             <button
-                                onClick={() => handleNavigation('/login')} 
+                                onClick={() => handleNavigation('/register-hospital')}
+                                className="hidden lg:inline-flex px-4 py-2 border border-cyan-500/40 text-xs font-bold rounded-full text-cyan-700 dark:text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 transition duration-300"
+                            >
+                                🏥 Register Hospital
+                            </button>
+
+                            <button
+                                onClick={() => handleNavigation('/login')}
                                 className="hidden sm:inline-flex px-6 py-2.5 border border-transparent text-sm font-semibold rounded-full text-white bg-cyan-600 shadow-lg hover:bg-cyan-700 transition duration-300 transform hover:scale-[1.05] focus:outline-none focus:ring-4 focus:ring-cyan-300 focus:ring-offset-2"
                             >
-                                Login / Start
+                                Login / Portal
                             </button>
 
                             {/* Mobile Menu Button (Hamburger) */}
@@ -197,9 +206,9 @@ export default function Landingpage() {
                 <div className={`md:hidden ${isMenuOpen ? 'block' : 'hidden'} absolute w-full bg-white dark:bg-gray-800 shadow-2xl transition duration-300 ease-in-out border-t dark:border-gray-700`}>
                     <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                         {['features', 'how-it-works', 'about', 'contact'].map(id => (
-                            <a 
+                            <a
                                 key={`mobile-${id}`}
-                                onClick={() => handleMobileLinkClick(`#${id}`)} 
+                                onClick={() => handleMobileLinkClick(`#${id}`)}
                                 href={`#${id}`}
                                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-cyan-50 dark:hover:bg-gray-700 capitalize"
                             >
@@ -207,10 +216,16 @@ export default function Landingpage() {
                             </a>
                         ))}
                         <button
-                            onClick={() => handleMobileLinkClick('/')} 
-                            className="w-full text-left mt-2 px-3 py-2.5 text-base font-semibold rounded-md text-white bg-cyan-600 hover:bg-cyan-700 transition duration-300"
+                            onClick={() => handleMobileLinkClick('/register-hospital')}
+                            className="w-full text-left mt-2 px-3 py-2 text-base font-semibold rounded-md text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-950/40 hover:bg-cyan-100 transition duration-300"
                         >
-                            Login / Start
+                            🏥 Register Hospital
+                        </button>
+                        <button
+                            onClick={() => handleMobileLinkClick('/login')}
+                            className="w-full text-left mt-1 px-3 py-2.5 text-base font-semibold rounded-md text-white bg-cyan-600 hover:bg-cyan-700 transition duration-300"
+                        >
+                            Login / Portal
                         </button>
                     </div>
                 </div>
@@ -224,14 +239,20 @@ export default function Landingpage() {
                             Regain Movement. <br className="sm:hidden" />Live Pain-Free.
                         </h1>
                         <p className="mt-8 max-w-3xl mx-auto text-xl sm:text-2xl text-gray-700 dark:text-gray-300 leading-relaxed transition-colors duration-500">
-                            Your personalized digital physiotherapy companion. Track progress, access custom exercises, and connect with your therapist virtually.
+                            Your personalized digital physiotherapy companion. Connect Hospitals, Doctors, and Patients on an intelligent rehabilitation platform.
                         </p>
-                        <div className="mt-12 flex justify-center space-x-4">
+                        <div className="mt-12 flex flex-wrap justify-center gap-4">
                             <button
                                 onClick={() => handleNavigation('/login')}
                                 className="px-8 py-3 text-lg sm:px-10 sm:py-4 sm:text-xl font-bold rounded-full text-white bg-cyan-600 shadow-2xl shadow-cyan-500/60 hover:bg-cyan-700 transition transform hover:scale-[1.05] duration-300 focus:outline-none focus:ring-4 focus:ring-cyan-300 focus:ring-offset-2"
                             >
-                                Start Your Recovery Journey
+                                Start Recovery / Login
+                            </button>
+                            <button
+                                onClick={() => handleNavigation('/register-hospital')}
+                                className="px-8 py-3 text-lg sm:px-10 sm:py-4 sm:text-xl font-bold rounded-full text-cyan-900 dark:text-white bg-white/70 dark:bg-gray-800/70 backdrop-blur-md border border-cyan-500/30 hover:bg-white dark:hover:bg-gray-800 transition transform hover:scale-[1.05] duration-300 shadow-xl"
+                            >
+                                🏥 Register Hospital
                             </button>
                         </div>
                     </div>
@@ -250,10 +271,10 @@ export default function Landingpage() {
                         </div>
 
                         <div className="mt-20 grid grid-cols-1 gap-10 md:grid-cols-3">
-                            
+
                             {/* Feature 1 */}
                             <div className="p-8 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xl transition transform hover:shadow-3xl hover:translate-y-[-4px] duration-300 cursor-pointer">
-                                <FeatureIcon 
+                                <FeatureIcon
                                     d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6m3-12l-3 3m3-3v12"
                                     label="Personalized Plans Icon"
                                 />
@@ -262,10 +283,10 @@ export default function Landingpage() {
                                     Receive custom rehabilitation routines designed by your physical therapist, delivered straight to your device with clear guidance.
                                 </p>
                             </div>
-                            
+
                             {/* Feature 2 */}
                             <div className="p-8 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xl transition transform hover:shadow-3xl hover:translate-y-[-4px] duration-300 cursor-pointer">
-                                <FeatureIcon 
+                                <FeatureIcon
                                     d="M15 10l4.55 4.55L21 12V3h-9l1.55 1.55L15 6V3H3v18h18"
                                     label="Video Monitoring Icon"
                                 />
@@ -277,7 +298,7 @@ export default function Landingpage() {
 
                             {/* Feature 3 */}
                             <div className="p-8 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xl transition transform hover:shadow-3xl hover:translate-y-[-4px] duration-300 cursor-pointer">
-                                <FeatureIcon 
+                                <FeatureIcon
                                     d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8s-9-3.582-9-8 4.03-8 9-8 9 3.582 9-8z"
                                     label="Chat Support Icon"
                                 />
@@ -311,7 +332,7 @@ export default function Landingpage() {
                             </div>
 
                             <div className="grid grid-cols-1 gap-12 lg:grid-cols-3 lg:gap-8 relative z-10">
-                                
+
                                 {/* Step 1 */}
                                 <div className="text-center p-6">
                                     <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-cyan-600 shadow-xl text-white dark:bg-cyan-500">
@@ -358,7 +379,7 @@ export default function Landingpage() {
                         <p className="mt-2 text-4xl leading-8 font-extrabold tracking-tight text-cyan-900 dark:text-cyan-400 sm:text-5xl">
                             Hear from our happy patients.
                         </p>
-                        
+
                         <div className="mt-16 space-y-12">
                             {/* Testimonial 1 */}
                             <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
@@ -491,12 +512,20 @@ export default function Landingpage() {
             <footer className="bg-gray-800 dark:bg-gray-950 text-white py-10 transition-colors duration-500">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
                     <p>&copy; {new Date().getFullYear()} PhysioBuddy. All rights reserved.</p>
-                    <div className="mt-4 space-x-4">
-                        <a href="#" className="hover:text-cyan-400 transition">Privacy Policy</a>
-                        <a href="#" className="hover:text-cyan-400 transition">Terms of Service</a>
+                    <div className="mt-4 flex flex-wrap justify-center items-center gap-6 text-xs sm:text-sm">
+                        <button onClick={() => setLegalModal({ open: true, type: 'privacy' })} className="text-gray-400 hover:text-cyan-400 transition underline underline-offset-4 cursor-pointer bg-transparent border-none">Privacy Policy</button>
+                        <span className="text-gray-600">•</span>
+                        <button onClick={() => setLegalModal({ open: true, type: 'terms' })} className="text-gray-400 hover:text-cyan-400 transition underline underline-offset-4 cursor-pointer bg-transparent border-none">Terms of Service</button>
                     </div>
                 </div>
             </footer>
+
+            {/* Legal Modal */}
+            <LegalModal
+                isOpen={legalModal.open}
+                onClose={() => setLegalModal({ open: false, type: legalModal.type })}
+                type={legalModal.type}
+            />
         </div>
     );
 }

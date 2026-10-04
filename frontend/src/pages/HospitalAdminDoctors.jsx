@@ -1,0 +1,191 @@
+import React, { useState, useEffect } from 'react';
+import { API_BASE } from '../config';
+import Navbar from '../Components/Navbar';
+import { Link } from 'react-router-dom';
+
+export default function HospitalAdminDoctors() {
+  const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [deletingId, setDeletingId] = useState(null);
+
+  useEffect(() => {
+    fetchDoctors();
+  }, []);
+
+  const fetchDoctors = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/api/hospital-admin/doctors/`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setDoctors(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id, username) => {
+    if (!window.confirm(`Are you sure you want to remove Dr. ${username}? This will also delete their login account.`)) return;
+
+    try {
+      setDeletingId(id);
+      const res = await fetch(`${API_BASE}/api/hospital-admin/doctors/${id}/delete/`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (res.ok) {
+        setDoctors(prev => prev.filter(d => d.id !== id));
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const filtered = doctors.filter(d =>
+    d.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (d.full_name && d.full_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (d.first_name && d.first_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (d.last_name && d.last_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    d.speciality.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    d.qualification.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (d.city && d.city.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 dark:from-gray-950 dark:via-gray-900 dark:to-slate-900 text-gray-900 dark:text-gray-100 font-[Inter]">
+      <Navbar role="hospital_admin" />
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+              <span>👨‍⚕️</span> Hospital Doctors
+            </h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              All physiotherapists and medical specialists linked to your hospital clinic.
+            </p>
+          </div>
+          <Link
+            to="/hospital-admin/add-doctor"
+            className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-sm shadow-xl shadow-emerald-500/25 transition flex items-center justify-center gap-2"
+          >
+            <span>➕</span> Add New Doctor
+          </Link>
+        </div>
+
+        {/* Search */}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Search doctors by name, username, speciality, or qualification..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-4 py-3 rounded-2xl bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 text-sm shadow-sm"
+          />
+        </div>
+
+        {/* Loading */}
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-500"></div>
+          </div>
+        )}
+
+        {/* Doctors Grid */}
+        {!loading && filtered.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.map((doc) => (
+              <div
+                key={doc.id}
+                className="backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 border border-white/50 dark:border-gray-800 rounded-3xl p-6 shadow-xl flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-3 mb-4">
+                    <div className="flex items-center gap-3">
+                      {doc.image_base64 ? (
+                        <img
+                          src={doc.image_base64}
+                          alt={doc.full_name || doc.username}
+                          className="w-12 h-12 rounded-2xl object-cover border border-emerald-500/30"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center text-xl font-bold">
+                          {(doc.first_name || doc.username).charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="font-bold text-lg text-gray-900 dark:text-white leading-tight">
+                          Dr. {doc.full_name || doc.username}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                            {doc.speciality}
+                          </span>
+                          {doc.full_name && doc.full_name !== doc.username && (
+                            <span className="text-[11px] text-gray-400 font-mono">
+                              @{doc.username}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleDelete(doc.id, doc.username)}
+                      disabled={deletingId === doc.id}
+                      className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg text-xs transition"
+                      title="Remove Doctor"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+
+                  <div className="space-y-1.5 text-xs text-gray-600 dark:text-gray-300 mb-4">
+                    <p><strong className="text-gray-900 dark:text-white">Qualification:</strong> {doc.qualification}</p>
+                    <p><strong className="text-gray-900 dark:text-white">Experience:</strong> {doc.experience_years ? `${doc.experience_years} years` : 'N/A'}</p>
+                    <p><strong className="text-gray-900 dark:text-white">Email:</strong> {doc.email}</p>
+                    <p><strong className="text-gray-900 dark:text-white">Phone:</strong> {doc.phone_number || 'N/A'}</p>
+                  </div>
+
+                  {doc.professional_summary && (
+                    <p className="text-xs text-gray-500 italic mb-4 line-clamp-2">
+                      "{doc.professional_summary}"
+                    </p>
+                  )}
+                </div>
+
+                <div className="pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                  <span className="text-xs text-gray-500">Caseload:</span>
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
+                    {doc.patient_count} Assigned Patients
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!loading && filtered.length === 0 && (
+          <div className="text-center py-16 backdrop-blur-xl bg-white/50 dark:bg-gray-900/50 rounded-3xl border border-gray-200 dark:border-gray-800">
+            <p className="text-gray-500 dark:text-gray-400 text-base">No doctors found in your hospital clinic.</p>
+            <Link
+              to="/hospital-admin/add-doctor"
+              className="mt-3 inline-block px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl"
+            >
+              Add First Doctor
+            </Link>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
